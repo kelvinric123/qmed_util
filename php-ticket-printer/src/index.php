@@ -34,7 +34,7 @@ $app->map['print']->get('/print/:ticket-no/:room')->execute(function(Context $co
         $print_time = $datetime->format('Y-m-d H:i:s');
 
         $connector = null;
-        $connector = new WindowsPrintConnector("Receipt Printser");
+        $connector = new WindowsPrintConnector("Receipt Printer");
 
         $printer = new Printer($connector);
 
