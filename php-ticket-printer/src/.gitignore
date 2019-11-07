@@ -2,4 +2,4 @@ vendor/*
 php/*
 SilentCMD.exe
 SilentCMD.exe.config
-startup.bat
+*.old
