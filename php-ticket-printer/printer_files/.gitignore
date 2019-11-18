@@ -1,5 +1,4 @@
 vendor/*
 php/*
-SilentCMD.exe
-SilentCMD.exe.config
 *.old
+local.app_url
