@@ -18,6 +18,8 @@ if(isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'OPTIONS')
     exit;
 }
 
+date_default_timezone_set("Asia/Kuala_Lumpur");
+
 /** @var \Exedra\Application $app */
 $app = new \Exedra\Application(__DIR__);
 
@@ -44,7 +46,7 @@ $app->map['app']->any('/:installation-id')->group(function(Group $group) {
             $room_number = $context->param('room', null); //'1';
             //$print_time =  $response[0]->created_at;  //'2019-10-14  11:32:00' ;
             //$print_time = date('d/m/Y h:i:s', time());
-            $print_time = $datetime->format('Y-m-d H:i:s');
+            $print_time = $datetime->format('Y-m-d h:i:A');
 
             $connector = null;
             $connector = new WindowsPrintConnector("Receipt Printer");
