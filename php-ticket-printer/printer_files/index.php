@@ -20,7 +20,7 @@ if(isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'OPTIONS')
 /** @var \Exedra\Application $app */
 $app = new \Exedra\Application(__DIR__);
 
-$app->map['print']->get('/print/:ticket-no/:room')->execute(function(Context $context) {
+$app->map['print']->get('/print/:ticket-no/:room?')->execute(function(Context $context) {
     try {
         $datetime = new DateTime();
 
@@ -28,7 +28,7 @@ $app->map['print']->get('/print/:ticket-no/:room')->execute(function(Context $co
         $subtitle = 'Ticket Number:';
         $ticket_number =    $context->param('ticket-no'); //'2122';
         $room_title = 'Room Number:';
-        $room_number = $context->param('room'); //'1';
+        $room_number = $context->param('room', null); //'1';
         //$print_time =  $response[0]->created_at;  //'2019-10-14  11:32:00' ;
         //$print_time = date('d/m/Y h:i:s', time());
         $print_time = $datetime->format('Y-m-d H:i:s');
@@ -55,10 +55,14 @@ $app->map['print']->get('/print/:ticket-no/:room')->execute(function(Context $co
         $printer -> feed(1);
 
         $printer -> selectPrintMode();
-        $printer -> text($room_title);
-        $printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-        $printer -> text($room_number);
-        $printer -> feed(1);
+        if ($room_number) {
+            $printer -> text($room_title);
+            $printer -> selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+
+            $printer -> text($room_number);
+            $printer -> feed(1);
+        }
+
         $printer -> selectPrintMode();
         $printer -> text($print_time);
         $printer -> feed(4);

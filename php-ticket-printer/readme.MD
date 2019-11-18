@@ -1,11 +1,6 @@
-# for developer - build instruction
-- download php
-- composer install
-- and package who thing
-
-
 # for technical - printer setup instruction
-- unzip package into somewhere
-- install printer
+- unzip .zip package into somewhere
 - share the printer under the name "Receipt Printer"
-- add startup.bat to startup
+- copy "run-printer.bat"
+- run shell:startup
+- paste as shortcut
