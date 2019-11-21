@@ -11,7 +11,7 @@ use Mike42\Escpos\Printer;
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: X-Requested-With');
-header('Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token, X-Bajet-Version, X-CSRF-TOKEN');
+header('Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token, X-CSRF-TOKEN');
 header('Access-Control-Max-Age: 600');
 
 if(isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'OPTIONS') {

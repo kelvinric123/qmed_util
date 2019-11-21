@@ -1,6 +1,6 @@
 <?php
 
-$config = parse_ini_file(__DIR__ . '/config.ini');
+$config = json_decode(file_get_contents(__DIR__ . '/../config.json'), true);
 
 $base = isset($config['host']) ? $config['host'] : 'https://qmed.asia';
 

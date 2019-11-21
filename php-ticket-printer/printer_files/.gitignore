@@ -2,3 +2,4 @@ vendor/*
 php/*
 *.old
 local.app_url
+!php/php.ini
