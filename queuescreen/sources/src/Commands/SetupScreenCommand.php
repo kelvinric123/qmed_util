@@ -2,7 +2,6 @@
 
 namespace Rasque\Commands;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -10,27 +9,9 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 
-class SetupScreenCommand extends Command
+class SetupScreenCommand extends BaseCommand
 {
     protected static $defaultName = 'rasque';
-    /**
-     * @var null|string
-     */
-    protected $configPath;
-
-    /**
-     * @var bool|string
-     */
-    protected $config;
-
-    public function __construct($configPath)
-    {
-        $this->configPath = $configPath;
-
-        $this->config = json_decode(file_get_contents($configPath), true);
-
-        parent::__construct();
-    }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
@@ -91,10 +72,5 @@ class SetupScreenCommand extends Command
         return 1;
     }
 
-    public function write(OutputInterface $output, $message)
-    {
-        $output->write($message);
 
-        return 0;
-    }
 }

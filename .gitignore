@@ -1,3 +1,5 @@
 .idea/*
 phps/*
 builds/*
+config.json
+files/*
