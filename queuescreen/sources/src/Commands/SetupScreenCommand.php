@@ -11,7 +11,10 @@ use Symfony\Component\Console\Question\Question;
 
 class SetupScreenCommand extends BaseCommand
 {
-    protected static $defaultName = 'rasque';
+    public function configure()
+    {
+        $this->setName('rasque');
+    }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {

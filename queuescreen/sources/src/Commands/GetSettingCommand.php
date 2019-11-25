@@ -13,10 +13,10 @@ use Symfony\Component\Console\Question\Question;
 
 class GetSettingCommand extends BaseCommand
 {
-    protected static $defaultName = 'settings';
-
     public function configure()
     {
+        $this->setName('settings');
+
         $this->addArgument('setting', InputArgument::REQUIRED, 'setting name : host, installation_id, device_name, screen_url');
     }
 

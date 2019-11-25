@@ -17,12 +17,21 @@ abstract class BaseCommand extends Command
      */
     protected $config;
 
-    public function __construct($configPath)
-    {
-        $this->configPath = $configPath;
+    /**
+     * @var string
+     */
+    protected $basePath;
 
-        if (file_exists($configPath))
-            $this->config = json_decode(file_get_contents($configPath), true);
+    public function __construct($basePath)
+    {
+        $basePath = trim($basePath, '/');
+
+        $this->basePath = $basePath;
+
+        $this->configPath = $basePath . '/config.json';
+
+        if (file_exists($this->configPath))
+            $this->config = json_decode(file_get_contents($this->configPath), true);
         else
             $this->config = [];
 
