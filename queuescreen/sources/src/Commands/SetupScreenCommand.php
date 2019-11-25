@@ -71,6 +71,10 @@ class SetupScreenCommand extends BaseCommand
         $output->writeln('Clinic : ' . $record['name']);
         $output->writeln('Device Name : ' . $deviceName);
         $output->writeln('Installation ID : ' . $record['installation_id']);
+        
+        // import autostart
+        if (!file_exists('/home/pi/.config/autostart/chrome-queuescreen.desktop'))
+            copy($this->basePath . '/autostart/chrome-queuescreen.desktop', '/home/pi/.config/autostart/chrome-queuescreen.desktop');
 
         return 1;
     }
