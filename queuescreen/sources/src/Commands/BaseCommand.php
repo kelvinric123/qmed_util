@@ -24,7 +24,7 @@ abstract class BaseCommand extends Command
 
     public function __construct($basePath)
     {
-        $basePath = trim($basePath, '/');
+        $basePath = rtrim($basePath, '/');
 
         $this->basePath = $basePath;
 
