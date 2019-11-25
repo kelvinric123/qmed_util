@@ -1,5 +1,6 @@
 <?php
 
+use Rasque\Commands\AdsSyncCommand;
 use Rasque\Commands\SetupScreenCommand;
 use Symfony\Component\Console\Application;
 
@@ -7,7 +8,7 @@ require_once __DIR__ . '/../sources/vendor/autoload.php';
 
 $console = new Application();
 
-$console->add($command = new SetupScreenCommand(__DIR__ . '/../'));
+$console->add($command = new AdsSyncCommand(__DIR__ . '/../'));
 
 $console->setDefaultCommand($command->getName(), true);
 
