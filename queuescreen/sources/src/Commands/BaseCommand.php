@@ -38,6 +38,14 @@ abstract class BaseCommand extends Command
         parent::__construct();
     }
 
+    public function getConfig($name, $default = null)
+    {
+        if (!isset($this->config[$name]))
+            return $default;
+
+        return $this->config[$name];
+    }
+
     public function write(OutputInterface $output, $message)
     {
         $output->write($message);
