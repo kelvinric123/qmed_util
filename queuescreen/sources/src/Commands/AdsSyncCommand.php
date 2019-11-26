@@ -21,6 +21,8 @@ function remoteCheckSize($url){
 
 class AdsSyncCommand extends BaseCommand
 {
+    const MAX_VIDEO_SIZE = 200000000;
+
     protected $playlistPath;
 
     /**
@@ -37,6 +39,9 @@ class AdsSyncCommand extends BaseCommand
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        if ($this->isSyncing())
+            return $this->write($output, 'Another synchronization process is running!');
+
         $command = $this;
 
         register_shutdown_function(function() use ($command) {
@@ -107,7 +112,7 @@ class AdsSyncCommand extends BaseCommand
             }
 
             // check size
-            if (remoteCheckSize($media['url']) > 200000000) {
+            if (remoteCheckSize($media['url']) > static::MAX_VIDEO_SIZE) {
                 $this->insertMapValue('skipped', $media['id']);
                 continue;
             }
@@ -126,10 +131,21 @@ class AdsSyncCommand extends BaseCommand
             $output->writeln('Downloaded ' . $media['url']);
 
             $this->updatePlaylist($localPlaylist);
-//            file_put_contents($localPlaylistPath, json_encode($localPlaylist, JSON_PRETTY_PRINT));
         }
 
+        $this->updateMapValue('sync', null);
+
         return 0;
+    }
+
+    protected function isSyncing()
+    {
+        $sync = $this->getMapValue('sync');
+
+        if ($sync !== null)
+            return true;
+
+        return false;
     }
 
     protected function initializeSync($local, $latest)
