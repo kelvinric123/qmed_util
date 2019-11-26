@@ -1,6 +1,7 @@
 {
     "require": {
-        "symfony/console": "3.2"
+        "symfony/console": "3.2",
+        "hellogerard/jobby": "^3.4"
     },
     "autoload": {
         "psr-4": {
