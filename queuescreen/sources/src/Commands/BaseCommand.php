@@ -52,4 +52,19 @@ abstract class BaseCommand extends Command
 
         return 0;
     }
+
+    public function getInstallationApiPath()
+    {
+        $host = isset($this->config['host']) ? $this->config['host'] : 'https://qmed.asia';
+
+        if (!isset($this->config['installation_id']))
+            throw new \Exception('Installation is required.');
+
+        return $host . '/apis/installations/' . $this->config['installation_id'];
+    }
+
+    public function getScreenApiPath()
+    {
+        return $this->getInstallationApiPath() . '/screens/' . $this->config['screen_id'];
+    }
 }

@@ -5,20 +5,6 @@ namespace Rasque\Commands;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-function remoteCheckSize($url){
-    $ch = curl_init($url);
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($ch, CURLOPT_HEADER, TRUE);
-    curl_setopt($ch, CURLOPT_NOBODY, TRUE);
-
-    $data = curl_exec($ch);
-    $size = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-
-    curl_close($ch);
-    return $size;
-}
-
 class AdsSyncCommand extends BaseCommand
 {
     const MAX_VIDEO_SIZE = 200000000;
@@ -35,6 +21,21 @@ class AdsSyncCommand extends BaseCommand
         $this->setName('sync');
 
         $this->playlistPath = $this->basePath . '/www/playlist-map.json';
+    }
+
+    protected function getSize($url)
+    {
+        $ch = curl_init($url);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HEADER, TRUE);
+        curl_setopt($ch, CURLOPT_NOBODY, TRUE);
+
+        $data = curl_exec($ch);
+        $size = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+
+        curl_close($ch);
+        return $size;
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
@@ -62,19 +63,12 @@ class AdsSyncCommand extends BaseCommand
 
         $localVideosPath = $this->basePath . '/www';
 
-        $localPlaylistPath = $this->playlistPath;
+//        $apiPath = $this->getConfig('host', 'https://qmed.asia') . '/apis/installation/' . $this->getConfig('installation_id') . '/ads_playlist';
+        $apiPath = $this->getScreenApiPath() . '/ads-playlist';
 
-        $latestPlaylist = [
-            ['id' => '4607df0c49990dc506fbfb36b74b9802', 'url' => 'http://ads.58.my/medias/4607df0c49990dc506fbfb36b74b9802.mp4'],
-            ['id' => '76066d118532f2b23a56bdbc6436f912', 'url' => 'http://ads.58.my/medias/76066d118532f2b23a56bdbc6436f912.mp4'],
-            ['id' => '7440809846c078442f1074959c1085d0', 'url' => 'http://ads.58.my/medias/7440809846c078442f1074959c1085d0.mp4']
-        ];
+        $latestPlaylist = json_decode(file_get_contents($apiPath), true)['data'];
 
-        $apiPath = $this->getConfig('host', 'https://qmed.asia') . '/api/installation/' . $this->getConfig('installation_id') . '/ads_playlist';
-
-        $latestPlaylist = json_decode(file_get_contents($apiPath), true);
-
-        $localPlaylist = @file_get_contents($localPlaylistPath);
+        $localPlaylist = @file_get_contents($this->playlistPath);
 
         $localPlaylist = $localPlaylist ? json_decode($localPlaylist, true)['playlist'] : [];
 
@@ -82,9 +76,10 @@ class AdsSyncCommand extends BaseCommand
         foreach ($localPlaylist as $media) {
             $id = $media['id'];
 
-            if (!$this->mediaExists($localPlaylist, $id)) {
+            if (!$this->mediaExists($latestPlaylist, $id)) {
                 unlink($this->basePath . '/www/' . $media['filename']);
                 $this->removeMedia($localPlaylist, $id);
+                $output->writeln('Removed ' . $media['filename']);
             }
         }
 
@@ -111,8 +106,10 @@ class AdsSyncCommand extends BaseCommand
                 continue;
             }
 
+            $maxSize = $this->getConfig('max_size', static::MAX_VIDEO_SIZE);
+
             // check size
-            if (remoteCheckSize($media['url']) > static::MAX_VIDEO_SIZE) {
+            if ($this->getSize($media['url']) > $maxSize) {
                 $this->insertMapValue('skipped', $media['id']);
                 continue;
             }
