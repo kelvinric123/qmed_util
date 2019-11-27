@@ -3,6 +3,7 @@
 namespace Rasque\Commands;
 
 use GuzzleHttp\Client;
+use Rasque\Logger;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -104,7 +105,11 @@ class SetupScreenCommand extends BaseCommand
         // import autostart, and create screen.sh
         $this->setupAutostart();
 
+        // import cron
+        $this->setupCron();
 
+        // log the setup
+        Logger::create()->log('setup');
 
         return 1;
     }
@@ -122,6 +127,11 @@ class SetupScreenCommand extends BaseCommand
         $stub = file_get_contents($binPath . '/screen.sh.stub');
 
         file_put_contents($binPath . '/screen.sh', str_replace('BIN_PATH', $binPath, $stub));
+    }
+
+    protected function setupCron()
+    {
+
     }
 
     protected function createNewScreen(QuestionHelper $helper, $input, $output, Client $http, $installationId)
