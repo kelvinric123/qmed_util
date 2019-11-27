@@ -24,9 +24,6 @@ class GetSettingCommand extends BaseCommand
     {
         $setting = $input->getArgument('setting');
 
-        if (!in_array($setting, ['host', 'installation_id', 'device_name', 'screen_url']))
-            return $this->write($output, 'Either host, installation_id, device_name, screen_url only');
-
         $baseUrl = isset($this->config['host']) ? $this->config['host'] : 'https://qmed.asia';
 
         if ($setting == 'screen_url')
