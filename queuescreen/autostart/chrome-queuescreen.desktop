@@ -4,6 +4,6 @@ Version=1.0
 Terminal=false
 Type=Application
 Name=Queuescreen
-Exec=sh /home/pi/qmed-utils/queuescreen/bin/screen.sh
+Exec=sh BIN_PATH/screen.sh
 Icon=chrome-kmnjmjbjmneelmflnnldpeekjdmbdhci-Default
 StartupWMClass=crx_kmnjmjbjmneelmflnnldpeekjdmbdhci
