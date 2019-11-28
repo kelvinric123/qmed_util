@@ -38,10 +38,34 @@ class AdsSyncCommand extends BaseCommand
         return $size;
     }
 
+    /**
+     * Check whether the playlist is modified
+     */
+    protected function needSync()
+    {
+        $ids = [];
+
+        if (!file_exists($this->playlistPath))
+            return true;
+
+        foreach (json_decode(file_get_contents($this->playlistPath), true)['playlist'] as $media) {
+            $ids[] = $media['id'];
+        }
+
+        $localHash = md5(implode('', $ids));
+
+        $liveHash = json_decode(file_get_contents($this->getScreenApiPath() . '/ads-playlist/hash'), true)['data'];
+
+        return $localHash != $liveHash;
+    }
+
     public function execute(InputInterface $input, OutputInterface $output)
     {
         if ($this->isSyncing())
             return $this->write($output, 'Another synchronization process is running!');
+
+        if (!$this->needSync())
+            return $this->write($output, 'Playlist hasn\'t changed.');
 
         $command = $this;
 
@@ -130,9 +154,25 @@ class AdsSyncCommand extends BaseCommand
             $this->updatePlaylist($localPlaylist);
         }
 
+        $this->recorrectOrdering($localPlaylist, $latestPlaylist);
+
         $this->updateMapValue('sync', null);
 
         return 0;
+    }
+
+    protected function recorrectOrdering($local, $latest)
+    {
+        $playlist = [];
+
+        foreach ($latest as $media) {
+            foreach ($local as $med) {
+                if ($med['id'] == $media['id'])
+                    $playlist[] = $med;
+            }
+        }
+
+        $this->updatePlaylist($playlist);
     }
 
     protected function isSyncing()
