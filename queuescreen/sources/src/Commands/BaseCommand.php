@@ -26,7 +26,7 @@ abstract class BaseCommand extends Command
     {
         $basePath = rtrim($basePath, '/');
 
-        $this->basePath = $basePath;
+        $this->basePath = realpath($basePath);
 
         $this->configPath = $basePath . '/config.json';
 

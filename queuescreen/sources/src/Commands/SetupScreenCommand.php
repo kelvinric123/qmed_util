@@ -124,14 +124,20 @@ class SetupScreenCommand extends BaseCommand
         file_put_contents('/home/pi/.config/autostart/chrome-queuescreen.desktop', $content);
 
         // screen.sh
-        $stub = file_get_contents($binPath . '/screen.sh.stub');
+        $stub = file_get_contents($this->basePath . '/stubs/screen.sh.stub');
 
         file_put_contents($binPath . '/screen.sh', str_replace('BIN_PATH', $binPath, $stub));
     }
 
     protected function setupCron()
     {
+        $contents = file_get_contents($this->basePath . '/stubs/crontab.stub');
+        
+        file_put_contents($tmpPath = $this->basePath . '/tmp/crontab.stub', str_replace('BIN_PATH', $this->basePath . '/bin', $contents));
 
+        shell_exec('crontab ' . $tmpPath);
+        
+        unlink($tmpPath);
     }
 
     protected function createNewScreen(QuestionHelper $helper, $input, $output, Client $http, $installationId)

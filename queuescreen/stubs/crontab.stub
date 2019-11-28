@@ -1,0 +1,2 @@
+* * * * * php BIN_PATH/log.php ping
+* * * * * php BIN_PATH/syncer.php
