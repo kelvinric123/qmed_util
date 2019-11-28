@@ -16,11 +16,15 @@ class AdsSyncCommand extends BaseCommand
      */
     protected $currentDownload = null;
 
+    protected $videosPath = '/var/www/html/ads';
+
     public function configure()
     {
         $this->setName('sync');
 
-        $this->playlistPath = $this->basePath . '/www/playlist-map.json';
+//        $this->playlistPath = $this->basePath . '/www/playlist-map.json';
+
+        $this->playlistPath = $this->videosPath . '/playlist-map.json';
     }
 
     protected function getSize($url)
@@ -85,7 +89,8 @@ class AdsSyncCommand extends BaseCommand
 
         ini_set('memory_limit', '400M');
 
-        $localVideosPath = $this->basePath . '/www';
+//        $localVideosPath = $this->basePath . '/www';
+        $localVideosPath = $this->videosPath;
 
 //        $apiPath = $this->getConfig('host', 'https://qmed.asia') . '/apis/installation/' . $this->getConfig('installation_id') . '/ads_playlist';
         $apiPath = $this->getScreenApiPath() . '/ads-playlist';
@@ -101,7 +106,7 @@ class AdsSyncCommand extends BaseCommand
             $id = $media['id'];
 
             if (!$this->mediaExists($latestPlaylist, $id)) {
-                unlink($this->basePath . '/www/' . $media['filename']);
+                unlink($this->videosPath . '/' . $media['filename']);
                 $this->removeMedia($localPlaylist, $id);
                 $output->writeln('Removed ' . $media['filename']);
             }
