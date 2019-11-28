@@ -40,7 +40,7 @@ class Logger
     public function log($type, array $params = null)
     {
         $data = [
-            'resource' => [],
+            'resource' => (new ResourceParam())->toArray(),
             'params' => $params
         ];
 
