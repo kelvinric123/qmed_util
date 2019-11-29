@@ -65,26 +65,6 @@ class AdsSyncCommand extends BaseCommand
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $self = $this;
-        declare(ticks = 1);
-        
-        $terminate = function() use ($self) {
-            $sync = $self->getMapValue('sync');
-            
-            // still running...!
-            if ($sync) {
-                $sync['terminated'] = true;
-            }
-            
-            
-            $self->updateMapValue('sync', $sync);
-        };
-        
-        //pcntl_signal(SIGINT, $terminate);
-        //pcntl_signal(SIGTERM, $terminate);
-        
-       // register_shutdown_function($terminate);
-        
         if ($this->isSyncing())
             return $this->write($output, 'Another synchronization process is running!');
 
@@ -202,8 +182,6 @@ class AdsSyncCommand extends BaseCommand
 
     protected function isSyncing()
     {
-        $sync = $this->getMapValue('sync');
-        
         $running = exec("ps aux|grep syncer.php|grep -v grep|wc -l");
         
         //echo "ps aux|grep syncer.php|grep -v grep|wc -l";
@@ -211,15 +189,6 @@ class AdsSyncCommand extends BaseCommand
         if ((int) $running > 1)
             return true;
             
-        return false;
-
-        if ($sync !== null) {
-            if (isset($sync['terminated']) && $sync['terminated'] == true)
-                return false;
-            
-            return true;
-        }
-
         return false;
     }
 
