@@ -2,6 +2,7 @@
 
 namespace Rasque\Commands;
 
+use Rasque\Logger;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -85,6 +86,10 @@ class AdsSyncCommand extends BaseCommand
             $command->insertMapValue('skipped', $command->currentDownload['id']);
         });
 
+        $id = microtime(true);
+
+        Logger::create()->log('SYNC_STARTED_' . $id);
+
         set_time_limit(0);
 
         ini_set('memory_limit', '400M');
@@ -119,6 +124,10 @@ class AdsSyncCommand extends BaseCommand
         $this->initializeSync($localPlaylist, $latestPlaylist);
 
         // from latest, check
+        $totalDownloaded = 0;
+
+        $totalSize = 0;
+
         foreach ($latestPlaylist as $media) {
             $id = $media['id'];
 
@@ -148,6 +157,10 @@ class AdsSyncCommand extends BaseCommand
             $this->currentDownload = $media;
 
             if (file_put_contents($localVideosPath . '/' . $filename, file_get_contents($media['url']))) {
+                $totalDownloaded++;
+
+                $totalSize += $this->getSize($media['url']);
+
                 $localPlaylist[] = [
                     'id' => $id,
                     'filename' => $filename
@@ -157,6 +170,12 @@ class AdsSyncCommand extends BaseCommand
             $this->currentDownload = null;
 
             $output->writeln('Downloaded ' . $media['url']);
+
+            Logger::create()->log('SYNC_FINISHED_' . $id, [
+                'total_download' => $totalDownloaded,
+                'total_size' => $totalSize,
+                'time_taken' => microtime(true) - $id
+            ]);
 
             $this->updatePlaylist($localPlaylist);
         }
