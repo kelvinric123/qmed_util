@@ -46,7 +46,7 @@ class AdsSyncCommand extends BaseCommand
     /**
      * Check whether the playlist is modified
      */
-    protected function needSync()
+    protected function needSync($maxSize = 0)
     {
         $ids = [];
 
@@ -59,7 +59,7 @@ class AdsSyncCommand extends BaseCommand
 
         $localHash = md5(implode('', $ids));
 
-        $liveHash = json_decode(file_get_contents($this->getScreenApiPath() . '/ads/playlist/hash'), true)['data'];
+        $liveHash = json_decode(file_get_contents($this->getScreenApiPath() . '/ads/playlist/hash?max_size=' . $maxSize), true)['data'];
 
         return $localHash != $liveHash;
     }
@@ -69,7 +69,10 @@ class AdsSyncCommand extends BaseCommand
         if ($this->isSyncing())
             return $this->write($output, 'Another synchronization process is running!');
 
-        if (!$this->needSync())
+        // TODO to remove this debug code later
+        $maxSize = $this->getConfig('max_size', static::MAX_VIDEO_SIZE);
+        
+        if (!$this->needSync($maxSize))
             return $this->write($output, 'Playlist hasn\'t changed.');
 
         $command = $this;
@@ -98,9 +101,6 @@ class AdsSyncCommand extends BaseCommand
         $localVideosPath = $this->videosPath;
 
 //        $apiPath = $this->getConfig('host', 'https://qmed.asia') . '/apis/installation/' . $this->getConfig('installation_id') . '/ads_playlist';
-
-        // TODO to remove this debug code later
-        $maxSize = $this->getConfig('max_size', static::MAX_VIDEO_SIZE);
 
         $apiPath = $this->getScreenApiPath() . '/ads/playlist?max_size=' . $maxSize;
 
