@@ -119,7 +119,7 @@ class SetupScreenCommand extends BaseCommand
         // autostart
         $binPath = realpath($this->basePath . '/bin');
 
-        $content = str_replace('BIN_PATH', $binPath, file_get_contents($this->basePath . '/autostart/chrome-queuescreen.desktop'));
+        $content = str_replace('BIN_PATH', $binPath, file_get_contents($this->basePath . '/stubs/chrome-queuescreen.desktop.stub'));
 
         file_put_contents('/home/pi/.config/autostart/chrome-queuescreen.desktop', $content);
 

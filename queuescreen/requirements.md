@@ -1,8 +1,8 @@
 best through NOOBS
 
 [required]
-apache2
-php
+apache2 (to serve videos locally)
+php 7.3 (to run process like syncing, logging etc)
 
 [optional]
 git
