@@ -171,14 +171,14 @@ class AdsSyncCommand extends BaseCommand
 
             $output->writeln('Downloaded ' . $media['url']);
 
-            Logger::create()->log('SYNC_FINISHED_' . $syncId, [
+            $this->updatePlaylist($localPlaylist);
+        }
+        
+        Logger::create()->log('SYNC_FINISHED_' . $syncId, [
                 'total_download' => $totalDownloaded,
                 'total_size' => $totalSize,
                 'time_taken' => time() - $id
             ]);
-
-            $this->updatePlaylist($localPlaylist);
-        }
 
         $this->recorrectOrdering($localPlaylist, $latestPlaylist);
 
