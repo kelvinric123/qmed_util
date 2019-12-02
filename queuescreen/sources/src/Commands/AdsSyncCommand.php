@@ -91,7 +91,7 @@ class AdsSyncCommand extends BaseCommand
 
         $syncId = time();
 
-        Logger::create()->log('SYNC_STARTED_' . $id);
+        Logger::create()->log('SYNC_STARTED_' . $syncId);
 
         set_time_limit(0);
 
