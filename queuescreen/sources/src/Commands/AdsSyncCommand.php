@@ -89,7 +89,7 @@ class AdsSyncCommand extends BaseCommand
             $command->insertMapValue('skipped', $command->currentDownload['id']);
         });
 
-        $id = time();
+        $syncId = time();
 
         Logger::create()->log('SYNC_STARTED_' . $id);
 
@@ -171,7 +171,7 @@ class AdsSyncCommand extends BaseCommand
 
             $output->writeln('Downloaded ' . $media['url']);
 
-            Logger::create()->log('SYNC_FINISHED_' . $id, [
+            Logger::create()->log('SYNC_FINISHED_' . $syncId, [
                 'total_download' => $totalDownloaded,
                 'total_size' => $totalSize,
                 'time_taken' => time() - $id
