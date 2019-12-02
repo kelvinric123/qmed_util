@@ -93,7 +93,11 @@ class AdsSyncCommand extends BaseCommand
         $localVideosPath = $this->videosPath;
 
 //        $apiPath = $this->getConfig('host', 'https://qmed.asia') . '/apis/installation/' . $this->getConfig('installation_id') . '/ads_playlist';
-        $apiPath = $this->getScreenApiPath() . '/ads/playlist';
+
+        // TODO to remove this debug code later
+        $maxSize = $this->getConfig('max_size', static::MAX_VIDEO_SIZE);
+
+        $apiPath = $this->getScreenApiPath() . '/ads/playlist?max_size=' . $maxSize;
 
         $latestPlaylist = json_decode(file_get_contents($apiPath), true)['data'];
 
@@ -135,13 +139,11 @@ class AdsSyncCommand extends BaseCommand
                 continue;
             }
 
-            $maxSize = $this->getConfig('max_size', static::MAX_VIDEO_SIZE);
-
             // check size
-            if ($this->getSize($media['url']) > $maxSize) {
+            /*if ($this->getSize($media['url']) > $maxSize) {
                 $this->insertMapValue('skipped', $media['id']);
                 continue;
-            }
+            }*/
 
             $this->currentDownload = $media;
 
