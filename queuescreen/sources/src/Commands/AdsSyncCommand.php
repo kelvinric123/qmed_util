@@ -58,7 +58,7 @@ class AdsSyncCommand extends BaseCommand
 
         $localHash = md5(implode('', $ids));
 
-        $liveHash = json_decode(file_get_contents($this->getScreenApiPath() . '/ads-playlist/hash'), true)['data'];
+        $liveHash = json_decode(file_get_contents($this->getScreenApiPath() . '/ads/playlist/hash'), true)['data'];
 
         return $localHash != $liveHash;
     }
@@ -93,7 +93,7 @@ class AdsSyncCommand extends BaseCommand
         $localVideosPath = $this->videosPath;
 
 //        $apiPath = $this->getConfig('host', 'https://qmed.asia') . '/apis/installation/' . $this->getConfig('installation_id') . '/ads_playlist';
-        $apiPath = $this->getScreenApiPath() . '/ads-playlist';
+        $apiPath = $this->getScreenApiPath() . '/ads/playlist';
 
         $latestPlaylist = json_decode(file_get_contents($apiPath), true)['data'];
 
