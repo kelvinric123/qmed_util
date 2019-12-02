@@ -86,7 +86,7 @@ class AdsSyncCommand extends BaseCommand
             $command->insertMapValue('skipped', $command->currentDownload['id']);
         });
 
-        $id = microtime(true);
+        $id = time();
 
         Logger::create()->log('SYNC_STARTED_' . $id);
 
@@ -174,7 +174,7 @@ class AdsSyncCommand extends BaseCommand
             Logger::create()->log('SYNC_FINISHED_' . $id, [
                 'total_download' => $totalDownloaded,
                 'total_size' => $totalSize,
-                'time_taken' => microtime(true) - $id
+                'time_taken' => time() - $id
             ]);
 
             $this->updatePlaylist($localPlaylist);
