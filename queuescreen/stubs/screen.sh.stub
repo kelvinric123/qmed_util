@@ -3,4 +3,4 @@ HOST="$(php BIN_PATH/settings.php host)"
 SCREEN_ID="$(php BIN_PATH/settings.php screen_id)"
 
 php BIN_PATH/log.php started
-/usr/bin/chromium-browser --noerrordialogs --incognito --disable-session-crashed-bubble --disable-infobars --kiosk $HOST/queuescreen/$INSTALLATION_ID/$SCREEN_ID?source=pi_start
+/usr/bin/chromium-browser --noerrordialogs --incognito --autoplay-policy=no-user-gesture-required --disable-session-crashed-bubble --disable-infobars --kiosk $HOST/queuescreen/$INSTALLATION_ID/$SCREEN_ID?source=pi_start
