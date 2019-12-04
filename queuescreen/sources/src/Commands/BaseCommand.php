@@ -54,14 +54,14 @@ abstract class BaseCommand extends Command
             'base_uri' => $baseUrl
         ]);
 
-        // check if this raspberry already linked
+        /*// check if this raspberry already linked
         try {
             $lookup = json_decode($this->http->request('GET', '/apis/installations/screen-lookup?device_id=' . $this->deviceId)->getBody(), true)['data'];
 
             $this->installationId = $lookup['installation_id'];
         } catch (ClientException $e) {
             $this->installationId = null;
-        }
+        }*/
 
         parent::__construct();
     }

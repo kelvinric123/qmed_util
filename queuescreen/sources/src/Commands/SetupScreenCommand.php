@@ -27,8 +27,18 @@ class SetupScreenCommand extends BaseCommand
 
         $deviceId = DeviceInfo::create()->getDeviceId();
 
-        if ($this->installationId) {
-            $clinic = json_decode($this->http->request('GET', '/apis/installations/' . $this->installationId)->getBody(), true)['data'];
+
+        // check if this raspberry already linked
+        $installationId = null;
+        try {
+            $lookup = json_decode($this->http->request('GET', '/apis/installations/screen-lookup?device_id=' . $this->deviceId)->getBody(), true)['data'];
+
+            $installationId = $lookup['installation_id'];
+        } catch (ClientException $e) {
+        }
+
+        if ($installationId) {
+            $clinic = json_decode($this->http->request('GET', '/apis/installations/' . $installationId)->getBody(), true)['data'];
             
             // import autostart, and create screen.sh
             $this->setupAutostart();
