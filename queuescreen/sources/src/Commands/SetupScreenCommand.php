@@ -3,6 +3,8 @@
 namespace Rasque\Commands;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use Rasque\DeviceInfo;
 use Rasque\Logger;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,24 +25,20 @@ class SetupScreenCommand extends BaseCommand
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
 
+        $deviceId = DeviceInfo::create()->getDeviceId();
+
+        if ($this->installationId) {
+            $clinic = json_decode($this->http->request('GET', '/apis/installations/' . $this->installationId)->getBody(), true)['data'];
+
+            return $this->write($output, 'This raspberry has already been configured for clinic [' . $clinic['name'] . ']');
+        }
+
         $question = new Question('Which clinic are you setting this Raspberry up for? search keyword : ', false);
 
         if (($search = $helper->ask($input, $output, $question)) === false)
             return $this->execute($input, $output);
 
-        $baseUrl = isset($this->config['host']) ? $this->config['host'] : 'https://qmed.asia';
-
-        $http = new Client([
-            'base_uri' => $baseUrl
-        ]);
-
-//        $result = @file_get_contents($baseUrl . '/apis/installations/search?name=' . urlencode($search));
-        $clinics = json_decode($http->request('GET', '/apis/installations/search?name=' . urlencode($search))->getBody(), true)['data'];
-//        if (!$result)
-//            return $this->write($output, 'Ooops, can\'t retrieve api at this moment');
-
-        // search the clinic through APIs
-//        $result = json_decode($result, true);
+        $clinics = json_decode($this->http->request('GET', '/apis/installations/search?name=' . urlencode($search))->getBody(), true)['data'];
 
         if (count($clinics) == 0)
             return $this->write($output, 'Oops, couldn\'t find any clinics');
@@ -64,8 +62,10 @@ class SetupScreenCommand extends BaseCommand
         if (!$helper->ask($input, $output, new ConfirmationQuestion('Set-up this raspberry for [' . $record['name'] . '](y/n)? : ')))
             return $this->write($output, 'Set-up cancelled');
 
+        $this->createNewScreen($helper, $input, $output, $this->http);
+
         // search for existing screens
-        $screens = json_decode($http->request('GET', '/apis/installations/' . $record['installation_id'] . '/screens')->getBody(), true)['data'];
+        /*$screens = json_decode($http->request('GET', '/apis/installations/' . $record['installation_id'] . '/screens')->getBody(), true)['data'];
 
         if (count($screens) > 0) {
             $choices = [];
@@ -91,7 +91,7 @@ class SetupScreenCommand extends BaseCommand
                 return 0;
         }
 
-        $this->config['screen_id'] = $screen['id'];
+        $this->config['screen_id'] = $screen['id'];*/
         $this->config['installation_id'] = $record['installation_id'];
 
         file_put_contents($this->configPath, json_encode($this->config, JSON_PRETTY_PRINT));
@@ -99,7 +99,7 @@ class SetupScreenCommand extends BaseCommand
         $output->writeLn('Successfully installed!');
         $output->writeLn('');
         $output->writeln('Clinic : ' . $record['name']);
-        $output->writeln('Screen Name : ' . $screen['name']);
+        $output->writeln('Device ID: ' . $deviceId);
         $output->writeln('Installation ID : ' . $record['installation_id']);
 
         // import autostart, and create screen.sh
@@ -140,15 +140,15 @@ class SetupScreenCommand extends BaseCommand
         unlink($tmpPath);
     }
 
-    protected function createNewScreen(QuestionHelper $helper, $input, $output, Client $http, $installationId)
+    protected function createNewScreen(QuestionHelper $helper, $input, $output)
     {
-        $screenName = $helper->ask($input, $output, new Question('What should we label this queuescreen with? : '));
+//        $screenName = $helper->ask($input, $output, new Question('What should we label this queuescreen with? : '));
 
-        if (!$screenName)
-            return $this->createNewScreen($helper, $input, $output, $http, $installationId);
+//        if (!$screenName)
+//            return $this->createNewScreen($helper, $input, $output, $http, $installationId);
 
-        $screen = json_decode($http->request('POST', '/apis/installations/' . $installationId . '/screens', [
-            'json' => ['name' => $screenName]
+        $screen = json_decode($this->http->request('POST', '/apis/installations/' . $this->installationId . '/screens', [
+            'json' => ['device_id' => $this->deviceId]
         ])->getBody(), true)['data'];
 
         return $screen;

@@ -12,20 +12,17 @@ class Logger
     protected $http;
 
     /**
-     * @var string
-     */
-    protected $installationId;
-
-    /**
      * @var int
      */
     protected $screenId;
 
-    public function __construct(Client $http, $installationId, $screenId)
+    /** @var string */
+    protected $deviceId;
+
+    public function __construct(Client $http, $deviceId)
     {
         $this->http = $http;
-        $this->installationId = $installationId;
-        $this->screenId = $screenId;
+        $this->deviceId = $deviceId;
     }
 
     public static function create()
@@ -34,7 +31,7 @@ class Logger
 
         $config = json_decode(file_get_contents($configPath), true);
 
-        return new static(new Client(['base_uri' => isset($config['host']) ? $config['host'] : 'https://qmed.asia']), $config['installation_id'], $config['screen_id']);
+        return new static(new Client(['base_uri' => isset($config['host']) ? $config['host'] : 'https://qmed.asia']), DeviceInfo::create()->getDeviceId());
     }
 
     public function log($type, array $params = null)
@@ -44,7 +41,7 @@ class Logger
             'params' => $params
         ];
 
-        $this->http->post('/apis/installations/' . $this->installationId . '/screens/' . $this->screenId . '/logs/' . $type, [
+        $this->http->post('/apis/installations/screens/' . $this->deviceId . '/logs/' . $type, [
             'json' => [
                 'data' => $data
             ]
