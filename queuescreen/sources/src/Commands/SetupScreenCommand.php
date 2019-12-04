@@ -62,7 +62,7 @@ class SetupScreenCommand extends BaseCommand
         if (!$helper->ask($input, $output, new ConfirmationQuestion('Set-up this raspberry for [' . $record['name'] . '](y/n)? : ')))
             return $this->write($output, 'Set-up cancelled');
 
-        $this->createNewScreen($helper, $input, $output, $this->http);
+        $this->createNewScreen($helper, $input, $output, $record['installation_id']);
 
         // search for existing screens
         /*$screens = json_decode($http->request('GET', '/apis/installations/' . $record['installation_id'] . '/screens')->getBody(), true)['data'];
@@ -140,14 +140,14 @@ class SetupScreenCommand extends BaseCommand
         unlink($tmpPath);
     }
 
-    protected function createNewScreen(QuestionHelper $helper, $input, $output)
+    protected function createNewScreen(QuestionHelper $helper, $input, $output, $installationId)
     {
 //        $screenName = $helper->ask($input, $output, new Question('What should we label this queuescreen with? : '));
 
 //        if (!$screenName)
 //            return $this->createNewScreen($helper, $input, $output, $http, $installationId);
 
-        $screen = json_decode($this->http->request('POST', '/apis/installations/' . $this->installationId . '/screens', [
+        $screen = json_decode($this->http->request('POST', '/apis/installations/' . $installationId. '/screens', [
             'json' => ['device_id' => $this->deviceId]
         ])->getBody(), true)['data'];
 
