@@ -1,7 +1,5 @@
-INSTALLATION_ID="$(php BIN_PATH/settings.php installation_id)"
 HOST="$(php BIN_PATH/settings.php host)"
-SCREEN_ID="$(php BIN_PATH/settings.php screen_id)"
 DEVICE_ID="$(sh BIN_PATH/device-id.sh)"
 
 php BIN_PATH/log.php started
-/usr/bin/chromium-browser --noerrordialogs --incognito --autoplay-policy=no-user-gesture-required --disable-session-crashed-bubble --disable-infobars --kiosk $HOST/queuescreen/d/$DEVICE_ID?source=pi_start
+/usr/bin/chromium-browser --noerrordialogs --incognito --autoplay-policy=no-user-gesture-required --disable-session-crashed-bubble --disable-infobars --kiosk $HOST/queuescreen/screens/$DEVICE_ID?source=pi_start

@@ -29,6 +29,15 @@ class SetupScreenCommand extends BaseCommand
 
         if ($this->installationId) {
             $clinic = json_decode($this->http->request('GET', '/apis/installations/' . $this->installationId)->getBody(), true)['data'];
+            
+            // import autostart, and create screen.sh
+            $this->setupAutostart();
+
+            // import cron
+            $this->setupCron();
+
+            // log the setup
+            Logger::create()->log('setup');
 
             return $this->write($output, 'This raspberry has already been configured for clinic [' . $clinic['name'] . ']');
         }
