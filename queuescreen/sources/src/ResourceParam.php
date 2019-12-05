@@ -34,7 +34,7 @@ class ResourceParam
 	// https://github.com/pear/Net_Wifi/blob/master/Net/Wifi.php
 	public function getConnectionStatus()
 	{
-		$iwconfig = shell_exec('/sbin/iwconfig');
+		$iwconfig = shell_exec('/sbin/iwconfig 2>&1; echo $?');
 	
 		$fields = [
 			'bit_rate' => '/Bit Rate[:=]([0-9.]+) [mk]b\\/s/i',
