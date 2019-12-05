@@ -6,7 +6,9 @@ class ResourceParam
 {
 	public function getTemp()
 	{
-		return trim(str_replace(['temp=', "'C"], '', shell_exec('vcgencmd measure_temp')));
+		return (int) trim(shell_exec('cat /sys/class/thermal/thermal_zone0/temp')) / 1000;
+		
+		// return trim(str_replace(['temp=', "'C"], '', shell_exec('vcgencmd measure_temp')));
 	}
 	
 	public function getMemory()
