@@ -227,7 +227,7 @@ class AdsSyncCommand extends BaseCommand
             $process++;
         }
         
-        file_put_contents('isrunning', $process);
+//        file_put_contents('isrunning', $process);
         
         return $process > 1;
         
