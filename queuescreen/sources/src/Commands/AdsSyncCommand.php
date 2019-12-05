@@ -203,7 +203,9 @@ class AdsSyncCommand extends BaseCommand
 
     protected function isSyncing()
     {
-        $running = exec("ps aux|grep syncer.php|grep -v grep|wc -l");
+        $running = shell_exec("ps auxww|grep syncer.php|grep -v grep|wc -l");
+        
+        file_put_contents('isrunning', $running);
         
         //echo "ps aux|grep syncer.php|grep -v grep|wc -l";
         
