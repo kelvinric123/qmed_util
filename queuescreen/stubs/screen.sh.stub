@@ -2,4 +2,4 @@ HOST="$(php BIN_PATH/settings.php host)"
 DEVICE_ID="$(sh BIN_PATH/device-id.sh)"
 
 php BIN_PATH/log.php started
-/usr/bin/chromium-browser --noerrordialogs --incognito --autoplay-policy=no-user-gesture-required --disable-session-crashed-bubble --disable-infobars --kiosk $HOST/queuescreen/screens/$DEVICE_ID?source=pi_start
+/usr/bin/chromium-browser --noerrordialogs --incognito --autoplay-policy=no-user-gesture-required --disable-session-crashed-bubble --enable-speech-dispatcher --disable-infobars --kiosk $HOST/queuescreen/screens/$DEVICE_ID?source=pi_start

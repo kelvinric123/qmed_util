@@ -155,6 +155,8 @@ class AdsSyncCommand extends BaseCommand
             }*/
 
             $this->currentDownload = $media;
+            
+            $output->writeLn('Downloading.. ' . $media['url']);
 
             if (file_put_contents($localVideosPath . '/' . $filename, file_get_contents($media['url']))) {
                 $totalDownloaded++;
@@ -203,9 +205,35 @@ class AdsSyncCommand extends BaseCommand
 
     protected function isSyncing()
     {
-        $running = shell_exec("ps auxww|grep syncer.php|grep -v grep|wc -l");
+        // $running = shell_exec("ps auxww|grep syncer.php|grep -v grep|wc -l");
+        $running = shell_exec("ps auxww|grep syncer.php");
+        
+        
+        $process = 0;
+        
+        foreach (explode("\n", $running) as $line) {
+            if (strpos($line, 'syncer.php') === false)
+                continue;
+                
+            if (strpos($line, 'bin/sh -c') !== false)
+                continue;
+                
+            if (strpos($line, 'auxww') !== false)
+                continue;
+                
+            if (strpos($line, 'grep') !== false)
+                continue;
+                
+            $process++;
+        }
+        
+        file_put_contents('isrunning', $process);
+        
+        return $process > 1;
         
         file_put_contents('isrunning', $running);
+        
+        file_put_contents('psaux', shell_exec("ps auxww"));
         
         //echo "ps aux|grep syncer.php|grep -v grep|wc -l";
         
