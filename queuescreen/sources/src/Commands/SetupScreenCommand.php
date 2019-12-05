@@ -39,15 +39,17 @@ class SetupScreenCommand extends BaseCommand
 
         if ($installationId) {
             $clinic = json_decode($this->http->request('GET', '/apis/installations/' . $installationId)->getBody(), true)['data'];
-            
-            // import autostart, and create screen.sh
-            $this->setupAutostart();
 
-            // import cron
-            $this->setupCron();
+            if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+                // import autostart, and create screen.sh
+                $this->setupAutostart();
 
-            // log the setup
-            Logger::create()->log('setup');
+                // import cron
+                $this->setupCron();
+
+                // log the setup
+                Logger::create()->log('setup');
+            }
 
             return $this->write($output, 'This raspberry has already been configured for clinic [' . $clinic['name'] . ']');
         }
@@ -81,36 +83,8 @@ class SetupScreenCommand extends BaseCommand
         if (!$helper->ask($input, $output, new ConfirmationQuestion('Set-up this raspberry for [' . $record['name'] . '](y/n)? : ')))
             return $this->write($output, 'Set-up cancelled');
 
-        $this->createNewScreen($helper, $input, $output, $record['installation_id']);
+        $this->createNewScreen($record['installation_id']);
 
-        // search for existing screens
-        /*$screens = json_decode($http->request('GET', '/apis/installations/' . $record['installation_id'] . '/screens')->getBody(), true)['data'];
-
-        if (count($screens) > 0) {
-            $choices = [];
-
-            $choices[1] = 'Create new screen';
-
-            foreach ($screens as $index => $screen) {
-                $choices[$index + 2] = $screen['name'];
-            }
-
-            $question = new ChoiceQuestion('Oops, we already found existing screens', $choices);
-
-            $answer = $helper->ask($input, $output, $question);
-
-            if ($answer == 'Create new screen') {
-                if (!($screen = $this->createNewScreen($helper, $input, $output, $http, $record['installation_id'])))
-                    return 0;
-            } else {
-                $screen = $screens[array_flip($choices)[$answer] - 2];
-            }
-        } else {
-            if (!($screen = $this->createNewScreen($helper, $input, $output, $http, $record['installation_id'])))
-                return 0;
-        }
-
-        $this->config['screen_id'] = $screen['id'];*/
         $this->config['installation_id'] = $record['installation_id'];
 
         file_put_contents($this->configPath, json_encode($this->config, JSON_PRETTY_PRINT));
@@ -159,13 +133,8 @@ class SetupScreenCommand extends BaseCommand
         unlink($tmpPath);
     }
 
-    protected function createNewScreen(QuestionHelper $helper, $input, $output, $installationId)
+    protected function createNewScreen($installationId)
     {
-//        $screenName = $helper->ask($input, $output, new Question('What should we label this queuescreen with? : '));
-
-//        if (!$screenName)
-//            return $this->createNewScreen($helper, $input, $output, $http, $installationId);
-
         $screen = json_decode($this->http->request('POST', '/apis/installations/' . $installationId. '/screens', [
             'json' => ['device_id' => $this->deviceId]
         ])->getBody(), true)['data'];

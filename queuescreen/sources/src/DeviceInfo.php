@@ -20,8 +20,8 @@ class DeviceInfo
 	public function getDeviceId()
 	{
 	    // for win based development test purpose
-		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
-		    return '1234567';
+        if ($deviceId = Config::instance()->get('device_id', null))
+            return $deviceId;
 
         $path = $this->basePath . '/bin/device-id.sh';
 
