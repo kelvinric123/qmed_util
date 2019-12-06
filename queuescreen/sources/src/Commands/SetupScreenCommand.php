@@ -103,9 +103,18 @@ class SetupScreenCommand extends BaseCommand
             // import www folder
             $this->setupWWW();
             
+            $this->setupShortcut();
+            
             // log the setup
             Logger::create()->log('setup');
         }
+    }
+    
+    protected function setupShortcut()
+    {
+        $stub = file_get_contents($this->basePath . '/stubs/setup.desktop.stub');
+        
+        file_put_contents('/home/pi/Desktop/setup.desktop', str_replace('BIN_PATH', $this->basePath . '/bin', $stub));
     }
     
     protected function setupWWW()
@@ -137,6 +146,10 @@ class SetupScreenCommand extends BaseCommand
         $stub = file_get_contents($this->basePath . '/stubs/screen.sh.stub');
 
         file_put_contents($binPath . '/screen.sh', str_replace('BIN_PATH', $binPath, $stub));
+        
+        $stub = file_get_contents($this->basePath . '/stubs/setup.sh.stub');
+        
+        file_put_contents($this->basePath . '/bin/setup.sh', str_replace('BIN_PATH', $binPath, $stub));
     }
 
     protected function setupCron()

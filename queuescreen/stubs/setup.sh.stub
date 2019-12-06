@@ -1,0 +1,5 @@
+php BIN_PATH/setup.php
+echo '\n'
+echo 'rebooting in 5 seconds'
+sleep 5
+reboot

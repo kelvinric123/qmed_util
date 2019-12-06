@@ -2,3 +2,4 @@ www/*.*
 !.gitkeep
 !www/ads/.gitkeep
 !www/staging/.gitkeep
+bin/setup.sh
