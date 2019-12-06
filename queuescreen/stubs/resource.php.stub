@@ -1,0 +1,13 @@
+<?php
+
+// todo wifi strenght
+// todo internet 
+// todo resource check
+
+$path = 'BASE_PATH';
+
+require_once $path . '/sources/vendor/autoload.php';
+
+header('Content-Type: application/json');
+
+echo json_encode((new \Rasque\ResourceParam())->toArray(), JSON_PRETTY_PRINT);

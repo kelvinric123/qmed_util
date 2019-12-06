@@ -40,16 +40,7 @@ class SetupScreenCommand extends BaseCommand
         if ($installationId) {
             $clinic = json_decode($this->http->request('GET', '/apis/installations/' . $installationId)->getBody(), true)['data'];
 
-            if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
-                // import autostart, and create screen.sh
-                $this->setupAutostart();
-
-                // import cron
-                $this->setupCron();
-
-                // log the setup
-                Logger::create()->log('setup');
-            }
+            $this->envSetup();
 
             return $this->write($output, 'This raspberry has already been configured for clinic [' . $clinic['name'] . ']');
         }
@@ -94,17 +85,43 @@ class SetupScreenCommand extends BaseCommand
         $output->writeln('Clinic : ' . $record['name']);
         $output->writeln('Device ID: ' . $deviceId);
         $output->writeln('Installation ID : ' . $record['installation_id']);
-
-        // import autostart, and create screen.sh
-        $this->setupAutostart();
-
-        // import cron
-        $this->setupCron();
-
-        // log the setup
-        Logger::create()->log('setup');
+        
+        $this->envSetup();
 
         return 1;
+    }
+    
+    protected function envSetup()
+    {
+        if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+            // import autostart, and create screen.sh
+            $this->setupAutostart();
+
+            // import cron
+            $this->setupCron();
+            
+            // import www folder
+            $this->setupWWW();
+            
+            // log the setup
+            Logger::create()->log('setup');
+        }
+    }
+    
+    protected function setupWWW()
+    {
+        $stub = file_get_contents($this->basePath . '/stubs/resource.php.stub');
+        
+        $wwwPath = \Rasque\Config::instance()->get('www_dir', '/var/www/html');
+        
+        file_put_contents($wwwPath . '/dev/resource.php', str_replace('BASE_PATH', $this->basePath, $stub));
+        
+        $status = @file_put_contents($wwwPath . '/something.txt', 'test');
+        
+        if (!$status)
+            exit('oops the public folder is permission is accessible by user pi');
+            
+        unlink($wwwPath . '/something.txt');
     }
 
     protected function setupAutostart()
