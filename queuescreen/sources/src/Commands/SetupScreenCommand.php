@@ -101,7 +101,7 @@ class SetupScreenCommand extends BaseCommand
             $this->setupCron();
             
             // import www folder
-            $this->setupWWW();
+//            $this->setupWWW();
             
             $this->setupShortcut();
             
@@ -117,11 +117,12 @@ class SetupScreenCommand extends BaseCommand
         file_put_contents('/home/pi/Desktop/setup.desktop', str_replace('BIN_PATH', $this->basePath . '/bin', $stub));
     }
     
-    protected function setupWWW()
+    /*protected function setupWWW()
     {
         $stub = file_get_contents($this->basePath . '/stubs/resource.php.stub');
         
-        $wwwPath = \Rasque\Config::instance()->get('www_dir', '/var/www/html');
+//        $wwwPath = \Rasque\Config::instance()->get('www_dir', '/var/www/html');
+        $wwwPath = $this->basePath . '/www';
         
         file_put_contents($wwwPath . '/dev/resource.php', str_replace('BASE_PATH', $this->basePath, $stub));
         
@@ -131,7 +132,7 @@ class SetupScreenCommand extends BaseCommand
             exit('oops the public folder is permission is accessible by user pi');
             
         unlink($wwwPath . '/something.txt');
-    }
+    }*/
 
     protected function setupAutostart()
     {

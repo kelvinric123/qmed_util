@@ -25,6 +25,8 @@ class AdsSyncCommand extends BaseCommand
 
 //        $this->playlistPath = $this->basePath . '/www/playlist-map.json';
 
+        $this->videosPath = $this->basePath . '/www/ads';
+
         $this->playlistPath = $this->videosPath . '/playlist-map.json';
     }
 
