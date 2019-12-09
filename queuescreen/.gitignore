@@ -1,4 +1,5 @@
 www/*.*
+www/ads/*.*
 !.gitkeep
 !www/ads/.gitkeep
 !www/staging/.gitkeep
