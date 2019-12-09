@@ -11,3 +11,5 @@ composer
 [setup]
 - /etc/apache2/apache2.conf
   - add Header set Access-Control-Allow-Origin "*" under /var/www
+- /etc/apache2/envvars
+  - setboth user and group to pi
