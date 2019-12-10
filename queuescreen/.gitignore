@@ -4,3 +4,4 @@ www/ads/*.*
 !www/ads/.gitkeep
 !www/staging/.gitkeep
 bin/setup.sh
+running-timestamp
