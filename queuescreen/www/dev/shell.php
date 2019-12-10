@@ -1,11 +1,12 @@
 <?php
 
+error_reporting(E_ALL);
+
 if (!isset($_POST))
     return;
     
 $commands = [];
-
-Header('Content-Type: application/json');
+//Header('Content-Type: application/json');
 
 $commands['reboot'] = function() {
     return shell_exec('sudo reboot -f');
@@ -18,19 +19,36 @@ $commands['ngrok_start'] = function() {
         if (!isset($_POST['authtoken']))
             die(json_encode(['error' => 'authtoken is missing']));
 
-        shell_exec('/home/pi/ngrok tcp 22 authtoken ' . $_POST['authtoken']);
-
-        $contents = @file_get_contents('http://localhost:4040/api/tunnels');
-
-        if (!$contents)
-            die(json_encode(['error' => 'authtoken is incorrect']));
+        shell_exec('/home/pi/ngrok tcp 22 --authtoken=' . $_POST['authtoken'] . ' > /dev/null &');
     }
+};
 
-    $ngrokXml = simplexml_load_string($contents);
+$commands['ngrok_url'] = function() {
+    $contents = @file_get_contents('http://localhost:4040/api/tunnels');
 
-    $connectionUrl = $ngrokXml->Tunnels->PublicURL;
+    $ngrok = json_decode($contents, true);
+
+    $connectionUrl = $ngrok['tunnels'][0]['public_url'];
 
     die(json_encode(['data' => $connectionUrl]));
+};
+
+$commands['ngrok_end'] = function() {
+    $aux = shell_exec('ps auxww | grep ngrok');
+    
+    foreach (explode("\n", $aux) as $line) {
+        if (strpos($line, 'home') === false)
+            continue;
+            
+        if (strpos($line, 'sh -c') !== false)
+            continue;
+            
+        $parts = preg_split('/\s+/', $line);
+        
+        $pid = $parts[1];
+        
+        shell_exec('kill ' . $pid);
+    }
 };
 
 if (isset($_POST['command']) && isset($commands[$_POST['command']])) {
