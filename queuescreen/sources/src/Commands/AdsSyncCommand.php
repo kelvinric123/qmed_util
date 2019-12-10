@@ -181,7 +181,7 @@ class AdsSyncCommand extends BaseCommand
         Logger::create()->log('SYNC_FINISHED_' . $syncId, [
                 'total_download' => $totalDownloaded,
                 'total_size' => $totalSize,
-                'time_taken' => time() - $id
+                'time_taken' => time() - $syncId
             ]);
 
         $this->recorrectOrdering($localPlaylist, $latestPlaylist);
