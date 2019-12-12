@@ -37,7 +37,10 @@ class Logger
     public function ping()
     {
         try {
-            $response = $this->log('ping');
+            $response = @json_decode($this->log('ping')->getBody(), true);
+
+            if (!$response)
+                return null;
 
             return $response['data'];
         } catch (\Exception $e) {
