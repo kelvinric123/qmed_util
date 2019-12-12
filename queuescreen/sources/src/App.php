@@ -24,7 +24,8 @@ class App
 
     public function getVersion()
     {
-        shell_exec('cd ' . realpath($this->getBasePath() . '/..'));
+//        shell_exec('cd ' . realpath($this->getBasePath() . '/..'));
+        chdir(realpath($this->getBasePath() . '/..'));
 
         return md5(shell_exec('git show --format="%h" --no-patch'));
     }
