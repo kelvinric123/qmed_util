@@ -8,13 +8,18 @@ $jobby = new \Jobby\Jobby();
 
 $jobby->add('Ping', [
     'closure' => function() use ($app) {
-        $response = \Rasque\Logger::create()->ping();
+        $response = \Rasque\Logger::instance()->ping();
 
         if (!$response)
             return;
 
         if (isset($response['ads_need_reboot'])) {
             $app->reboot('reboot_ads_inactive');
+            return;
+        }
+
+        if (isset($response['version_update'])) {
+            shell_exec('sh update.sh');
             return;
         }
     },
@@ -32,8 +37,6 @@ $jobby->add('RunningCheck', [
         // if in-active for the last 10 minutes, restart
         if (time() > strtotime('+5 minutes', $time)) {
             return $app->reboot('reboot_inactive');
-//            \Rasque\Logger::create()->log('inactive_reboot');
-//            shell_exec('sudo reboot -f');
         }
 
         return null;

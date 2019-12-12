@@ -2,4 +2,4 @@
 
 shell_exec('cd ~qmed-utils');
 
-echo shell_exec('git show --format="%h" --no-patch');
+echo md5(shell_exec('git show --format="%h" --no-patch'));

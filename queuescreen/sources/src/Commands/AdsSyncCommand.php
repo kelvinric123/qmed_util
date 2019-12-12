@@ -93,7 +93,7 @@ class AdsSyncCommand extends BaseCommand
 
         $syncId = time();
 
-        Logger::create()->log('SYNC_STARTED_' . $syncId);
+        Logger::instance()->log('SYNC_STARTED_' . $syncId);
 
         set_time_limit(0);
 
@@ -178,7 +178,7 @@ class AdsSyncCommand extends BaseCommand
             $this->updatePlaylist($localPlaylist);
         }
         
-        Logger::create()->log('SYNC_FINISHED_' . $syncId, [
+        Logger::instance()->log('SYNC_FINISHED_' . $syncId, [
                 'total_download' => $totalDownloaded,
                 'total_size' => $totalSize,
                 'time_taken' => time() - $syncId

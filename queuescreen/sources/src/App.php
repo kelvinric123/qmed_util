@@ -22,6 +22,13 @@ class App
         return realpath(__DIR__ . '/../..');
     }
 
+    public function getVersion()
+    {
+        shell_exec('cd ~qmed-utils');
+
+        return md5(shell_exec('git show --format="%h" --no-patch'));
+    }
+
     public function getPath($path)
     {
         return $this->getBasePath() . '/' . ltrim($path, '/');
@@ -32,7 +39,7 @@ class App
         $lastRebootTime = @file_get_contents($this->getBasePath() . '/last-reboot-time');
 
         if (!$lastRebootTime) {
-            \Rasque\Logger::create()->log($reason);
+            \Rasque\Logger::instance()->log($reason);
             file_put_contents($this->getPath('last-reboot-time'), time());
             shell_exec('sudo reboot -f');
             return;
@@ -40,7 +47,7 @@ class App
 
         // ONLY reboot when there's no reboot under the last 5 minutes
         if (time() > strtotime('+5 minutes', $lastRebootTime)) {
-            \Rasque\Logger::create()->log($reason);
+            \Rasque\Logger::instance()->log($reason);
             file_put_contents($this->getPath('last-reboot-time'), time());
             shell_exec('sudo reboot -f');
             return;

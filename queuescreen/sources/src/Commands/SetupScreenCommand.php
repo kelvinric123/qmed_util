@@ -106,7 +106,7 @@ class SetupScreenCommand extends BaseCommand
             $this->setupShortcut();
             
             // log the setup
-            Logger::create()->log('setup');
+            Logger::instance()->log('setup');
         }
     }
     

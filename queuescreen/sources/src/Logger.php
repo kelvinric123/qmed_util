@@ -19,19 +19,28 @@ class Logger
     /** @var string */
     protected $deviceId;
 
-    public function __construct(Client $http, $deviceId)
+    /** @var Logger $instance */
+    protected static $instance;
+
+    protected function __construct(Client $http, $deviceId)
     {
         $this->http = $http;
         $this->deviceId = $deviceId;
     }
 
-    public static function create()
+    public static function instance()
     {
-        $configPath = __DIR__ . '/../../config.json';
+        if (!static::$instance) {
+//            $configPath = __DIR__ . '/../../config.json';
+//
+//            $config = json_decode(file_get_contents($configPath), true);
 
-        $config = json_decode(file_get_contents($configPath), true);
+            $config = Config::instance();
 
-        return new static(new Client(['base_uri' => isset($config['host']) ? $config['host'] : 'https://qmed.asia']), DeviceInfo::create()->getDeviceId());
+            return new static(new Client(['base_uri' => $config->get('host', 'http://qmed.asia')]), DeviceInfo::create()->getDeviceId());
+        }
+
+        return static::$instance;
     }
 
     public function ping()
@@ -56,6 +65,7 @@ class Logger
     public function log($type, array $params = null)
     {
         $data = [
+            'version' => App::instance()->getVersion(),
             'resource' => (new ResourceParam())->toArray(),
             'params' => $params
         ];

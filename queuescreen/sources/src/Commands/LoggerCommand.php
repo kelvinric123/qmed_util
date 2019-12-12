@@ -23,7 +23,7 @@ class LoggerCommand extends BaseCommand
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        Logger::create()->log($input->getArgument('type'), []);
+        Logger::instance()->log($input->getArgument('type'), []);
 
         return 0;
     }
