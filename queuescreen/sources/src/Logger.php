@@ -58,6 +58,7 @@ class Logger
     }
 
     /**
+     * Test
      * @param $type
      * @param array|null $params
      * @return \Psr\Http\Message\ResponseInterface
