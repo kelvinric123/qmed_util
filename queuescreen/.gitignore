@@ -5,3 +5,4 @@ www/ads/*.*
 !www/staging/.gitkeep
 bin/setup.sh
 running-timestamp
+last-reboot-time
