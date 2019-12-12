@@ -76,8 +76,6 @@ class SetupScreenCommand extends BaseCommand
 
         $this->createNewScreen($record['installation_id']);
 
-        $this->config['installation_id'] = $record['installation_id'];
-
         file_put_contents($this->configPath, json_encode($this->config, JSON_PRETTY_PRINT));
 
         $output->writeLn('Successfully installed!');
