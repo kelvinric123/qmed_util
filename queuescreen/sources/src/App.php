@@ -32,7 +32,7 @@ class App
 
     public function getPath($path)
     {
-        return $this->getBasePath() . '/' . ltrim($path, '/');
+        return rtrim($this->getBasePath(), '/') . '/' . ltrim($path, '/');
     }
 
     public function reboot($reason)
