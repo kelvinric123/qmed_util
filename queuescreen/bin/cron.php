@@ -19,6 +19,7 @@ $jobby->add('Ping', [
         }
 
         if (isset($response['version_update'])) {
+            \Rasque\Logger::instance()->log('version_update');
             shell_exec('sh update.sh');
             return;
         }
