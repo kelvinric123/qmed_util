@@ -1,8 +1,28 @@
 <?php
 
+use Rasque\Logger;
+
+require_once __DIR__ . '/../sources/vendor/autoload.php';
+
+$logger = Logger::instance();
+
+if (!isset($argv[4]))
+    return $logger->log('play_lack_args');
+
+$x = $argv[1];
+$y = $argv[2];
+$width = $argv[3];
+$height = $argv[4];
+
+$volume = isset($argv[5]) ? $argv[5] : 2700;
+
+// hard cap
+$volume = $volume > 2000 ? $volume: 2700;
+
+
 while (true) {
     $adsPath = realpath(__DIR__ . '/../www/omx-ads');
-    $playlistPath = realpath(__DIR__ . '/../www/omx-ads/playlist-map.json');
+    $playlistPath = realpath(__DIR__ . '/../www/ads/playlist-map.json');
     
     $playlist = @file_get_contents($playlistPath);
 
@@ -16,11 +36,17 @@ while (true) {
         if (!file_exists($path))
             continue;
             
-        $top = 10;
-        $left = 10;
-        $width = 1581;
-        $height = 960;
-        
-        shell_exec('omxplayer --win "' . $top .' ' . $left . ' ' . $width .' ' . $height . '" ' . $path);
+        /*$top = 12;
+        $left = 12;
+        $width = 1578;
+        $height = 897;
+
+        $vol = 2700;*/
+
+        $start = date('Y-m-d H:i:s');
+        shell_exec('omxplayer --win "' . $y .' ' . $x . ' ' . $width .' ' . $height . '" ' . $path . ' --vol -' . $volume);
+        $end = date('Y-m-d H:i:s');
+
+        $logger->logPlaytime($media['id'], $start, $end);
     }
 }

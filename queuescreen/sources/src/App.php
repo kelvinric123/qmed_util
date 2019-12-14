@@ -32,7 +32,7 @@ class App
 
     public function getPath($path)
     {
-        return rtrim($this->getBasePath(), '/') . '/' . ltrim($path, '/');
+        return realpath(rtrim($this->getBasePath(), '/') . '/' . ltrim($path, '/'));
     }
 
     public function reboot($reason)
@@ -55,5 +55,32 @@ class App
         }
 
         return;
+    }
+
+    public function processIsRunning($pattern)
+    {
+        $running = shell_exec("ps auxww|grep " . $pattern);
+
+        $process = 0;
+
+        foreach (explode("\n", $running) as $line) {
+            if (strpos($line, $pattern) === false)
+                continue;
+
+            if (strpos($line, 'bin/sh -c') !== false)
+                continue;
+
+            if (strpos($line, 'auxww') !== false)
+                continue;
+
+            if (strpos($line, 'grep') !== false)
+                continue;
+
+            $process++;
+        }
+
+//        file_put_contents('isrunning', $process);
+
+        return $process > 1;
     }
 }

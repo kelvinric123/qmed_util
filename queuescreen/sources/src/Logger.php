@@ -57,6 +57,17 @@ class Logger
         }
     }
 
+    public function logPlaytime($mediaId, $start, $end)
+    {
+        return $this->http->post('/apis/installations/screens/' . $this->deviceId . '/ads/playtime/logs', [
+            'json' => [
+                'media_id' => $mediaId,
+                'start_at' => $start,
+                'end_at' => $end
+            ]
+        ]);
+    }
+
     /**
      * @param $type
      * @param array|null $params
