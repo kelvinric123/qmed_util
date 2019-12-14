@@ -14,8 +14,8 @@ $height = $_GET['height'];
 
 // check first if process already running
 if ($app->processIsRunning('play-ad.php'))
-    return 'already-running';
+    die('already running');
 
-$path = $app->getPath("bin/play-ad.php $x $y $width $height $volume");
+$path = $app->getPath("bin/play-ad.php");
 
 shell_exec('php ' . $path . ' ' . $x . ' ' . $y . ' ' . $width . ' ' . $height . ' ' . $volume);
