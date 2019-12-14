@@ -19,9 +19,8 @@ $volume = isset($argv[5]) ? $argv[5] : 2700;
 // hard cap
 $volume = $volume > 2000 ? $volume: 2700;
 
-
 while (true) {
-    $adsPath = realpath(__DIR__ . '/../www/omx-ads');
+    $adsPath = realpath(__DIR__ . '/../www/ads');
     $playlistPath = realpath(__DIR__ . '/../www/ads/playlist-map.json');
     
     $playlist = @file_get_contents($playlistPath);
