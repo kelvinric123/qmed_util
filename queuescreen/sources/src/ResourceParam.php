@@ -85,7 +85,7 @@ class ResourceParam
         return trim(shell_exec('git show --format="%h" --no-patch'));
 	}
 
-    public function getDownloadProcess()
+    public function getSyncInfo()
     {
         $playlist = @file_get_contents(App::instance()->getPath('www/ads/playlist-map.json'));
 
@@ -107,7 +107,7 @@ class ResourceParam
 	{
 		return [
 		    'version' => $this->getVersion(),
-            'download_process' => $this->getDownloadProcess(),
+            'sync_info' => $this->getSyncInfo(),
 			'temp' => $this->getTemp(),
 			'memory' => $this->getMemory(),
 			'storage' => $this->getStorage(),

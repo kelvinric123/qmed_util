@@ -34,13 +34,6 @@ while (true) {
         
         if (!file_exists($path))
             continue;
-            
-        /*$top = 12;
-        $left = 12;
-        $width = 1578;
-        $height = 897;
-
-        $vol = 2700;*/
 
         $start = date('Y-m-d H:i:s');
         shell_exec('omxplayer --win "' . $y .' ' . $x . ' ' . $width .' ' . $height . '" ' . $path . ' --vol -' . $volume);
