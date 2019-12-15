@@ -104,9 +104,14 @@ class AdsSyncCommand extends BaseCommand
 
 //        $apiPath = $this->getConfig('host', 'https://qmed.asia') . '/apis/installation/' . $this->getConfig('installation_id') . '/ads_playlist';
 
-        $apiPath = $this->getScreenApiPath() . '/ads/playlist?max_size=' . $maxSize;
+        $apiPath = $this->getScreenApiPath() . '/ads/playlist';
 
-        $latestPlaylist = json_decode(file_get_contents($apiPath), true)['data'];
+        $latestContent = @file_get_contents($apiPath);
+
+        if (!$latestContent)
+            return $this->write($output, 'No internet!');
+
+        $latestPlaylist = json_decode($latestContent, true)['data'];
 
         $localPlaylist = @file_get_contents($this->playlistPath);
 
