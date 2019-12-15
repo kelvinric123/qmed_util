@@ -66,6 +66,10 @@ $commands['update'] = function() use ($app) {
     shell_exec('sh ' . $path);
 };
 
+$commands['kill_ads'] = function() use ($app) {
+    $app->killAds();
+};
+
 if (isset($_POST['command']) && isset($commands[$_POST['command']])) {
     $commands[$_POST['command']]();
 }

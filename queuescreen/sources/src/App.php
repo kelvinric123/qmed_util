@@ -100,6 +100,12 @@ class App
             $this->killProcess($id);
     }
 
+    public function killAds()
+    {
+        $this->kill('play-ad.php');
+        $this->kill('omxplayer');
+    }
+
     public function processIsRunning($pattern)
     {
         $running = shell_exec("ps auxww | grep " . $pattern);
