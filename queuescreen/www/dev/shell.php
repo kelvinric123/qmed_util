@@ -10,7 +10,9 @@ error_reporting(E_ALL);
 
 if (!isset($_POST))
     return;
-    
+
+$data = isset($_POST['data']) ? $_POST['data'] : [];
+
 $commands = [];
 //Header('Content-Type: application/json');
 

@@ -12,6 +12,12 @@ $y = $_GET['y'];
 $width = $_GET['width'];
 $height = $_GET['height'];
 
+if (isset($_GET['refresh'])) {
+    // kill process
+    $app->kill('play-ad.php');
+    $app->kill('omxplayer');
+}
+
 // check first if process already running
 if ($app->processIsRunning('play-ad.php'))
     die('already running');

@@ -57,9 +57,52 @@ class App
         return;
     }
 
+    public function getProcessIds($pattern)
+    {
+        $running = shell_exec('ps auxww | grep ' . $pattern);
+
+        $ids = [];
+
+        foreach (explode("\n", $running) as $line) {
+            if (strpos($line, $pattern) === false)
+                continue;
+
+            if (strpos($line, 'bin/sh -c') !== false)
+                continue;
+
+            if (strpos($line, 'auxww') !== false)
+                continue;
+
+            if (strpos($line, 'grep') !== false)
+                continue;
+
+            $parts = preg_split('/\s+/', $line);
+
+            $ids[]  = $parts[1];
+        }
+
+        return [];
+    }
+
+    public function killProcess($id)
+    {
+        shell_exec('kill ' . $id);
+    }
+
+    public function kill($pattern)
+    {
+        $processIds = $this->getProcessIds($pattern);
+
+        if (!$processIds)
+            return;
+
+        foreach ($processIds as $id)
+            $this->killProcess($id);
+    }
+
     public function processIsRunning($pattern)
     {
-        $running = shell_exec("ps auxww|grep " . $pattern);
+        $running = shell_exec("ps auxww | grep " . $pattern);
 
         $process = 0;
 
