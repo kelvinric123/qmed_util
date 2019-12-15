@@ -2,4 +2,4 @@
 
 shell_exec('cd ' . realpath(__DIR__ . '/../../../..'));
 
-echo md5(shell_exec('git show --format="%h" --no-patch'));
+echo trim(shell_exec('git show --format="%h" --no-patch'));

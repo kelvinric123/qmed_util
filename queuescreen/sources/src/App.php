@@ -27,7 +27,7 @@ class App
 //        shell_exec('cd ' . realpath($this->getBasePath() . '/..'));
         chdir(realpath($this->getBasePath() . '/..'));
 
-        return md5(shell_exec('git show --format="%h" --no-patch'));
+        return trim(shell_exec('git show --format="%h" --no-patch'));
     }
 
     public function getPath($path)

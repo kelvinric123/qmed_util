@@ -9,4 +9,7 @@ $app = App::instance();
 // run code update
 $path = $app->getPath('bin/update.sh');
 
-shell_exec('sh ' . $path);
+if (isset($_GET['version']))
+    shell_exec('sh ' . $path . ' ' . $_GET['version']);
+else
+    shell_exec('sh ' . $path);
