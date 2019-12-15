@@ -61,7 +61,7 @@ class AdsSyncCommand extends BaseCommand
 
         $localHash = md5(implode('', $ids));
 
-        $liveHash = json_decode(file_get_contents($this->getScreenApiPath() . '/ads/playlist/hash?max_size=' . $maxSize), true)['data'];
+        $liveHash = json_decode(file_get_contents($this->getScreenApiPath() . '/ads/playlist/hash'), true)['data'];
 
         return $localHash != $liveHash;
     }
