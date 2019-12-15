@@ -1,5 +1,11 @@
 <?php
 
+use Rasque\App;
+
+require_once  __DIR__ . '/../../sources/vendor/autoload.php';
+
+$app = App::instance();
+
 error_reporting(E_ALL);
 
 if (!isset($_POST))
@@ -49,6 +55,13 @@ $commands['ngrok_end'] = function() {
         
         shell_exec('kill ' . $pid);
     }
+};
+
+$commands['update'] = function() use ($app) {
+    // run code update
+    $path = $app->getPath('bin/update.sh');
+
+    shell_exec('sh ' . $path);
 };
 
 if (isset($_POST['command']) && isset($commands[$_POST['command']])) {
