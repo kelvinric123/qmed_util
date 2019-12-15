@@ -84,11 +84,30 @@ class ResourceParam
     {
         return trim(shell_exec('git show --format="%h" --no-patch'));
 	}
+
+    public function getDownloadProcess()
+    {
+        $playlist = @file_get_contents(App::instance()->getPath('www/ads/playlist-map.json'));
+
+        if (!$playlist)
+            return null;
+
+        $playlist = @json_decode($playlist, true);
+
+        if (!isset($playlist['sync']))
+            return null;
+
+        if (!$playlist['sync'])
+            return null;
+
+        return $playlist['sync'];
+	}
 	
 	public function toArray()
 	{
 		return [
 		    'version' => $this->getVersion(),
+            'download_process' => $this->getDownloadProcess(),
 			'temp' => $this->getTemp(),
 			'memory' => $this->getMemory(),
 			'storage' => $this->getStorage(),
