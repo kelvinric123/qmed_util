@@ -46,7 +46,12 @@ class Logger
     public function ping()
     {
         try {
-            $response = @json_decode($this->log('ping')->getBody(), true);
+            $response = $this->log('ping');
+
+            if (!$response)
+                return null;
+
+            $response = @json_decode($response->getBody(), true);
 
             if (!$response)
                 return null;
@@ -71,7 +76,7 @@ class Logger
     /**
      * @param $type
      * @param array|null $params
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return \Psr\Http\Message\ResponseInterface|null
      */
     public function log($type, array $params = null)
     {
@@ -81,10 +86,14 @@ class Logger
             'params' => $params
         ];
 
-        return $this->http->post('/apis/installations/screens/' . $this->deviceId . '/logs/' . $type, [
-            'json' => [
-                'data' => $data
-            ]
-        ]);
+        try {
+            return $this->http->post('/apis/installations/screens/' . $this->deviceId . '/logs/' . $type, [
+                'json' => [
+                    'data' => $data
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }
