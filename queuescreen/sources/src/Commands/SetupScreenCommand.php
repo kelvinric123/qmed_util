@@ -115,6 +115,9 @@ class SetupScreenCommand extends BaseCommand
     {
         $stub = file_get_contents($this->basePath . '/stubs/lxde-autostart.stub');
 
+        if (!file_exists('/home/pi/.config/lxsession/LXDE-pi'))
+            mkdir('/home/pi/.config/lxsession', 0755, true);
+
         file_put_contents('/home/pi/.config/lxsession/LXDE-pi/autostart', $stub);
     }
     
