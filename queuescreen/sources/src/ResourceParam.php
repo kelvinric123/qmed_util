@@ -79,10 +79,16 @@ class ResourceParam
 	{
 		return @file_get_contents('https://google.com') ? true : false;
 	}
+
+    public function getVersion()
+    {
+        return trim(shell_exec('git show --format="%h" --no-patch'));
+	}
 	
 	public function toArray()
 	{
 		return [
+		    'version' => $this->getVersion(),
 			'temp' => $this->getTemp(),
 			'memory' => $this->getMemory(),
 			'storage' => $this->getStorage(),
