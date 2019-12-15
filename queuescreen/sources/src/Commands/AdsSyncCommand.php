@@ -97,7 +97,7 @@ class AdsSyncCommand extends BaseCommand
 
         set_time_limit(0);
 
-        ini_set('memory_limit', '400M');
+        ini_set('memory_limit', '1300M');
 
 //        $localVideosPath = $this->basePath . '/www';
         $localVideosPath = $this->videosPath;
