@@ -95,6 +95,9 @@ class SetupScreenCommand extends BaseCommand
             // import autostart, and create screen.sh
             $this->setupAutostart();
 
+            // import LXDE setting
+            $this->setupLXDE();
+
             // import cron
             $this->setupCron();
             
@@ -102,10 +105,17 @@ class SetupScreenCommand extends BaseCommand
 //            $this->setupWWW();
             
             $this->setupShortcut();
-            
+
             // log the setup
             Logger::instance()->log('setup');
         }
+    }
+
+    protected function setupLXDE()
+    {
+        $stub = file_get_contents($this->basePath . '/stubs/lxde-autostart.stub');
+
+        file_put_contents('/home/pi/.config/lxsession/LXDE-pi/autostart', $stub);
     }
     
     protected function setupShortcut()
