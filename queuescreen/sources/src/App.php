@@ -22,6 +22,11 @@ class App
         return realpath(__DIR__ . '/../..');
     }
 
+    public function log($type, $params = [])
+    {
+        return Logger::instance()->log($type, $params);
+    }
+
     public function getVersion()
     {
 //        shell_exec('cd ' . realpath($this->getBasePath() . '/..'));

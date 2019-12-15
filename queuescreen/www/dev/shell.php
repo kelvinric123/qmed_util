@@ -75,7 +75,8 @@ $commands['kill_ads'] = function() use ($app) {
 };
 
 if (isset($_POST['command']) && isset($commands[$_POST['command']])) {
-    $commands[$_POST['command']]();
+    $app->log('command_' . $_POST['command']);
+    $commands[$_POST['command']]($data);
 }
 
 if (isset($_POST['shell'])) {
