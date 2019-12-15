@@ -20,6 +20,10 @@ $commands['reboot'] = function() {
     return shell_exec('sudo reboot -f');
 };
 
+$commands['soft_reboot'] = function() {
+    return shell_exec('sudo reboot');
+};
+
 $commands['ngrok_start'] = function() {
     $contents = @file_get_contents('http://localhost:4040/api/tunnels');
 
