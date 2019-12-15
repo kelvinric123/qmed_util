@@ -81,7 +81,7 @@ class App
             $ids[]  = $parts[1];
         }
 
-        return [];
+        return $ids;
     }
 
     public function killProcess($id)
