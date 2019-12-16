@@ -260,12 +260,6 @@ class AdsSyncCommand extends BaseCommand
                 $total++;
         }
 
-        file_put_contents($this->basePath . '/www/ads/sync-info.json', json_encode([
-            'total' => $total,
-            'completed'=> 0,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]));
-
         /*$this->updateMapValue('sync', [
             'total' => $total,
             'completed' => 0
@@ -275,19 +269,6 @@ class AdsSyncCommand extends BaseCommand
     protected function updatePlaylist(array $playlist)
     {
         $this->updateMapValue('playlist', $playlist);
-
-        $syncInfo = @file_get_contents($this->basePath . '/www/ads/sync-info.json');
-
-        if (!$syncInfo)
-            return;
-
-        $syncInfo = json_decode($syncInfo, true);
-
-        $syncInfo['completed'] = count($playlist);
-        $syncInfo['updated_at'] = date('Y-m-d H:i:s');
-
-        file_put_contents($this->basePath . '/www/ads/sync-info.json', json_encode($syncInfo));
-
         /*$sync = $this->getMapValue('sync');
 
         $sync['completed'] = count($playlist);
