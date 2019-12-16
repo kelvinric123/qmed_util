@@ -14,10 +14,10 @@ $y = $argv[2];
 $width = $argv[3];
 $height = $argv[4];
 
-$volume = isset($argv[5]) ? $argv[5] : 2700;
+$volume = isset($argv[5]) ? $argv[5] : 1500;
 
 // hard cap
-$volume = $volume > 2000 ? $volume: 2700;
+//$volume = $volume > 2000 ? $volume: 2700;
 
 while (true) {
     $adsPath = realpath(__DIR__ . '/../www/ads');
