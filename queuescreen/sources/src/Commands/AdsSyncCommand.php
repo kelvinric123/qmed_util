@@ -202,8 +202,10 @@ class AdsSyncCommand extends BaseCommand
 
         foreach ($latest as $media) {
             foreach ($local as $med) {
-                if ($med['id'] == $media['id'])
+                if ($med['id'] == $media['id']) {
                     $playlist[] = $med;
+                    break;
+                }
             }
         }
 
