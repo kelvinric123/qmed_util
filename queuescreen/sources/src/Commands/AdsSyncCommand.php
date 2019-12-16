@@ -93,7 +93,7 @@ class AdsSyncCommand extends BaseCommand
 
         $syncId = time();
 
-        Logger::instance()->log('sync_starting_' . $syncId);
+        Logger::instance()->log('SYNC_STARTED_' . $syncId);
 
         set_time_limit(0);
 
@@ -134,8 +134,6 @@ class AdsSyncCommand extends BaseCommand
         $totalDownloaded = 0;
 
         $totalSize = 0;
-
-        $logger = Logger::instance();
 
         foreach ($latestPlaylist as $media) {
             $id = $media['id'];
@@ -184,14 +182,16 @@ class AdsSyncCommand extends BaseCommand
 
             $this->updatePlaylist($localPlaylist);
         }
-
-        $logger->log('sync_finished_' . $syncId, [
+        
+        Logger::instance()->log('SYNC_FINISHED_' . $syncId, [
                 'total_download' => $totalDownloaded,
                 'total_size' => $totalSize,
                 'time_taken' => time() - $syncId
             ]);
 
         $this->recorrectOrdering($localPlaylist, $latestPlaylist);
+
+        $this->updateMapValue('sync', null);
 
         return 0;
     }
@@ -260,20 +260,21 @@ class AdsSyncCommand extends BaseCommand
                 $total++;
         }
 
-        /*$this->updateMapValue('sync', [
+        $this->updateMapValue('sync', [
             'total' => $total,
             'completed' => 0
-        ]);*/
+        ]);
     }
 
     protected function updatePlaylist(array $playlist)
     {
         $this->updateMapValue('playlist', $playlist);
-        /*$sync = $this->getMapValue('sync');
+
+        $sync = $this->getMapValue('sync');
 
         $sync['completed'] = count($playlist);
 
-        $this->updateMapValue('sync', $sync);*/
+        $this->updateMapValue('sync', $sync);
     }
 
     public function getMapValue($key, $default = null)
