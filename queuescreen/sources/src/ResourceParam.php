@@ -107,7 +107,7 @@ class ResourceParam
 	{
 		return [
 		    'version' => $this->getVersion(),
-            'sync_info' => $this->getSyncInfo(),
+//            'sync_info' => $this->getSyncInfo() this lock error so error
 			'temp' => $this->getTemp(),
 			'memory' => $this->getMemory(),
 			'storage' => $this->getStorage(),
