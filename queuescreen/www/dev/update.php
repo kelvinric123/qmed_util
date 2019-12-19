@@ -12,8 +12,6 @@ if (isset($_GET['soft-update'])) {
     return;
 }
 
-
-
 // run code update
 $path = $app->getPath('bin/update.sh');
 

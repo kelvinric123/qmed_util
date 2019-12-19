@@ -43,10 +43,13 @@ class Logger
         return static::$instance;
     }
 
-    public function ping()
+    public function ping($noWait = false)
     {
         try {
-            $response = $this->log('ping');
+            if ($noWait)
+                return $this->log('ping', [], ['timeout' => 1]);
+
+            $response = $this->log('ping', []);
 
             if (!$response)
                 return null;
@@ -76,9 +79,10 @@ class Logger
     /**
      * @param $type
      * @param array|null $params
-     * @return \Psr\Http\Message\ResponseInterface|null
+     * @param array $guzzleOpts
+     * @return null|\Psr\Http\Message\ResponseInterface
      */
-    public function log($type, array $params = null)
+    public function log($type, array $params = null, $guzzleOpts = [])
     {
         $data = [
             'version' => App::instance()->getVersion(),
@@ -86,12 +90,15 @@ class Logger
             'params' => $params
         ];
 
+        $options = [
+            'json' => [
+                'data' => $data
+        ]];
+
+        $options = array_merge($options, $guzzleOpts);
+
         try {
-            return $this->http->post('/apis/installations/screens/' . $this->deviceId . '/logs/' . $type, [
-                'json' => [
-                    'data' => $data
-                ]
-            ]);
+            return $this->http->post('/apis/installations/screens/' . $this->deviceId . '/logs/' . $type, $options);
         } catch (\Exception $e) {
             return null;
         }
