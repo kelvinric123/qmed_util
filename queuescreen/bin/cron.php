@@ -25,7 +25,7 @@ $jobby->add('Ping', [
             return;
         }
     },
-   'schedule' => '* * * * *'
+   'schedule' => '*/5 * * * *'
 ]);
 
 $jobby->add('RunningCheck', [
