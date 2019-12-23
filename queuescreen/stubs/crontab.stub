@@ -1,2 +1,2 @@
-* * * * * php BIN_PATH/syncer.php
+*/5 * * * * php BIN_PATH/syncer.php
 * * * * * php BIN_PATH/cron.php
