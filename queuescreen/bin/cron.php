@@ -28,6 +28,15 @@ $jobby->add('Ping', [
    'schedule' => '*/5 * * * *'
 ]);
 
+$jobby->add('BSODCheck', [
+    'closure' => function() use ($app) {
+        if ($app->isBSOD()) {
+            return $app->reboot('reboot_bsod');
+        }
+    },
+    'schedule' => '* * * * *'
+]);
+
 $jobby->add('RunningCheck', [
     'closure' => function() use ($app) {
         $time = @file_get_contents($app->getBasePath() . '/running-timestamp');

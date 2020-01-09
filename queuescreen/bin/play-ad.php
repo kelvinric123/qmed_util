@@ -41,5 +41,8 @@ while (true) {
         $end = date('Y-m-d H:i:s');
 
         $logger->logPlaytime($media['id'], $start, $end);
+
+        // sleep a bit take care <3
+        usleep(100000);
     }
 }
