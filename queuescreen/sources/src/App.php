@@ -22,9 +22,9 @@ class App
         return realpath(__DIR__ . '/../..');
     }
 
-    public function log($type, $params = [])
+    public function log($type, $params = [], array $guzzleOpts = [])
     {
-        return Logger::instance()->log($type, $params);
+        return Logger::instance()->log($type, $params, $guzzleOpts);
     }
 
     public function getVersion()
@@ -40,6 +40,15 @@ class App
         return realpath(rtrim($this->getBasePath(), '/') . '/' . ltrim($path, '/'));
     }
 
+    /**
+     * Check if it currently hangs
+     * @return bool
+     */
+    public function isBSOD()
+    {
+        return trim(shell_exec('dmesg | grep "blocked for more than 120"')) ? true : false;
+    }
+
     public function reboot($reason)
     {
         $lastRebootTime = @file_get_contents($this->getBasePath() . '/last-reboot-time');
@@ -47,7 +56,7 @@ class App
         if (!$lastRebootTime) {
             \Rasque\Logger::instance()->log($reason);
             file_put_contents($this->getPath('last-reboot-time'), time());
-            shell_exec('sudo reboot -f');
+            shell_exec('sudo reboot');
             return;
         }
 
@@ -55,7 +64,7 @@ class App
         if (time() > strtotime('+5 minutes', $lastRebootTime)) {
             \Rasque\Logger::instance()->log($reason);
             file_put_contents($this->getPath('last-reboot-time'), time());
-            shell_exec('sudo reboot -f');
+            shell_exec('sudo reboot');
             return;
         }
 

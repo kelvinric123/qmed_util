@@ -11,6 +11,8 @@ pi user must be sudoer
 in /etc/sysctl.conf
 net.ipv6.conf.all.disable_ipv6 = 1
 
+
+
 [optional]
 git
 composer
@@ -30,3 +32,6 @@ composer
   - set up ./ngrok authtoken token
 - enable ssh through sudo raspi-config
   - change password to raspberry1
+- copy ssh readonly key
+  - cp qmed-utils/queuescreen/stubs/ssh .ssh
+  - chmod 600 ~/.ssh/id_rsa_bitbucket
