@@ -31,6 +31,17 @@ $commands['ngrok_start'] = function() {
         if (!isset($_POST['authtoken']))
             die(json_encode(['error' => 'authtoken is missing']));
 
+        shell_exec('/home/pi/ngrok tcp 22 --region=ap --authtoken=' . $_POST['authtoken'] . ' > /dev/null &');
+    }
+};
+
+$commands['ngrok_start_old'] = function() {
+    $contents = @file_get_contents('http://localhost:4040/api/tunnels');
+
+    if (!$contents) {
+        if (!isset($_POST['authtoken']))
+            die(json_encode(['error' => 'authtoken is missing']));
+
         shell_exec('/home/pi/ngrok tcp 22 --authtoken=' . $_POST['authtoken'] . ' > /dev/null &');
     }
 };
