@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTM TV2 Live Stream</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+        }
+        #stream-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        /* Hide any ad overlays that might appear */
+        .ad-overlay,
+        .advertisement,
+        [class*="ad-"],
+        [id*="ad-"],
+        [class*="Ad"],
+        [id*="Ad"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        #controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            transition: opacity 0.3s;
+        }
+        #controls.visible {
+            display: block;
+        }
+        #controls button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        #controls button:hover {
+            background: #5568d3;
+        }
+        #status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 15px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 9999;
+            display: none;
+        }
+        #status-bar.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="stream-container">
+        <iframe id="stream-frame" 
+                src="" 
+                allowfullscreen 
+                allow="autoplay; fullscreen; encrypted-media; accelerometer; gyroscope; picture-in-picture">
+        </iframe>
+    </div>
+    
+    <div id="error-screen" style="display: none; text-align: center; padding: 40px; color: white;">
+        <h2>⚠️ X-Frame-Options Error Detected</h2>
+        <p style="margin: 20px 0; color: #ccc;">RTM Klik blocks iframe embedding. Redirecting to workaround...</p>
+        <div style="font-size: 48px; margin: 20px 0;" id="redirect-countdown">3</div>
+    </div>
+
+    <div id="controls">
+        <button onclick="reloadStream()">🔄 Reload</button>
+        <button onclick="toggleFullscreen()">⛶ Fullscreen</button>
+        <button onclick="closeControls()">✕ Close</button>
+    </div>
+
+    <div id="status-bar">
+        <span id="status-text">Stream loaded. Move mouse to show controls.</span>
+    </div>
+
+    <script>
+        let controlsTimeout;
+        let adSkipAttempts = 0;
+        const iframe = document.getElementById('stream-frame');
+        const controls = document.getElementById('controls');
+        const statusBar = document.getElementById('status-bar');
+        const statusText = document.getElementById('status-text');
+
+        // Show controls on mouse move
+        document.addEventListener('mousemove', function() {
+            controls.classList.add('visible');
+            statusBar.classList.add('visible');
+            
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => {
+                controls.classList.remove('visible');
+                statusBar.classList.remove('visible');
+            }, 3000);
+        });
+
+        // Initial status
+        statusBar.classList.add('visible');
+        setTimeout(() => {
+            statusBar.classList.remove('visible');
+        }, 5000);
+
+        function updateStatus(message) {
+            statusText.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            statusBar.classList.add('visible');
+            
+            setTimeout(() => {
+                statusBar.classList.remove('visible');
+            }, 3000);
+        }
+
+        function reloadStream() {
+            updateStatus('Reloading stream...');
+            iframe.src = iframe.src;
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                updateStatus('Fullscreen enabled');
+            } else {
+                document.exitFullscreen();
+                updateStatus('Fullscreen disabled');
+            }
+        }
+
+        function closeControls() {
+            controls.classList.remove('visible');
+            statusBar.classList.remove('visible');
+        }
+
+        // Detect X-Frame-Options error and redirect
+        let frameLoadAttempted = false;
+        let redirectCountdown = 3;
+        
+        function checkFrameLoad() {
+            setTimeout(function() {
+                try {
+                    // Try to access iframe content
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc.body.innerHTML.length > 0) {
+                        updateStatus('✅ Stream loaded successfully');
+                        console.log('RTM stream loaded at:', new Date().toLocaleTimeString());
+                    }
+                } catch (e) {
+                    // X-Frame-Options or CORS error detected
+                    console.error('X-Frame-Options error detected:', e);
+                    showErrorAndRedirect();
+                }
+            }, 3000);
+        }
+        
+        function showErrorAndRedirect() {
+            document.getElementById('stream-container').style.display = 'none';
+            const errorScreen = document.getElementById('error-screen');
+            errorScreen.style.display = 'block';
+            
+            const countdownEl = document.getElementById('redirect-countdown');
+            
+            function updateRedirectCountdown() {
+                if (redirectCountdown > 0) {
+                    countdownEl.textContent = redirectCountdown;
+                    redirectCountdown--;
+                    setTimeout(updateRedirectCountdown, 1000);
+                } else {
+                    window.location.href = 'stream-player-workaround.html';
+                }
+            }
+            
+            updateRedirectCountdown();
+        }
+        
+        // Try to load the iframe
+        iframe.src = 'https://rtmklik.rtm.gov.my/live/tv2';
+        
+        // Listen for iframe load
+        iframe.addEventListener('load', function() {
+            if (!frameLoadAttempted) {
+                frameLoadAttempted = true;
+                checkFrameLoad();
+            }
+        });
+        
+        // Also check after timeout in case load event doesn't fire
+        setTimeout(function() {
+            if (!frameLoadAttempted) {
+                frameLoadAttempted = true;
+                checkFrameLoad();
+            }
+        }, 5000);
+
+        // Try to detect and skip ads (limited by CORS)
+        function attemptAdSkip() {
+            try {
+                adSkipAttempts++;
+                
+                // Note: This won't work due to CORS, but we try anyway
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                if (iframeDoc) {
+                    // Look for skip buttons
+                    const skipSelectors = [
+                        '.skip-ad',
+                        '.ytp-ad-skip-button',
+                        '[class*="skip"]',
+                        'button[aria-label*="Skip"]',
+                        '.ad-skip'
+                    ];
+                    
+                    skipSelectors.forEach(selector => {
+                        const skipButton = iframeDoc.querySelector(selector);
+                        if (skipButton && skipButton.offsetParent !== null) {
+                            skipButton.click();
+                            updateStatus('⏭️ Skipped ad');
+                            console.log('Ad skipped at:', new Date().toLocaleTimeString());
+                        }
+                    });
+                    
+                    // Hide ad overlays
+                    const adElements = iframeDoc.querySelectorAll(
+                        '.ad-overlay, .advertisement, [class*="ad-container"], [id*="ad-"]'
+                    );
+                    
+                    adElements.forEach(el => {
+                        if (el.style.display !== 'none') {
+                            el.style.display = 'none';
+                            updateStatus('🚫 Hidden ad overlay');
+                        }
+                    });
+                }
+            } catch (error) {
+                // Expected CORS error
+                if (adSkipAttempts === 1) {
+                    console.log('CORS prevents direct ad manipulation (expected)');
+                    console.log('For ad-free experience, use direct stream URL method');
+                }
+            }
+        }
+
+        // Periodically attempt to skip ads
+        setInterval(attemptAdSkip, 2000);
+
+        // Monitor for stream errors
+        iframe.addEventListener('error', function() {
+            updateStatus('❌ Stream error - reloading in 5 seconds...');
+            setTimeout(reloadStream, 5000);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case 'f':
+                case 'F':
+                    toggleFullscreen();
+                    break;
+                case 'r':
+                case 'R':
+                    reloadStream();
+                    break;
+                case 'Escape':
+                    closeControls();
+                    break;
+            }
+        });
+
+        // Log for debugging
+        console.log('RTM TV2 Stream Player');
+        console.log('Keyboard shortcuts:');
+        console.log('  F = Toggle fullscreen');
+        console.log('  R = Reload stream');
+        console.log('  ESC = Hide controls');
+        console.log('Move mouse to show controls');
+        
+        // Auto-reload on network issues (every 30 minutes as a safety measure)
+        setInterval(function() {
+            console.log('Periodic stream refresh');
+            reloadStream();
+        }, 30 * 60 * 1000); // 30 minutes
+    </script>
+</body>
+</html>
+

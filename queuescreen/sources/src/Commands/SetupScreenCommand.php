@@ -74,7 +74,24 @@ class SetupScreenCommand extends BaseCommand
         if (!$helper->ask($input, $output, new ConfirmationQuestion('Set-up this raspberry for [' . $record['name'] . '](y/n)? : ')))
             return $this->write($output, 'Set-up cancelled');
 
+        // Ask for player type selection
+        $playerChoice = new ChoiceQuestion(
+            'Select the video player type:',
+            [
+                1 => 'OMX Player (Traditional - overlays on webpage with manual positioning)',
+                2 => 'Live TV2 (HTML5 Player - embedded in webpage, no OMX overlay)'
+            ],
+            1 // default to OMX
+        );
+        $playerChoice->setErrorMessage('Player type %s is invalid.');
+        
+        $selectedPlayer = $helper->ask($input, $output, $playerChoice);
+        $playerType = ($selectedPlayer === 'Live TV2 (HTML5 Player - embedded in webpage, no OMX overlay)') ? 'live-tv2' : 'omx';
+
         $this->createNewScreen($record['installation_id']);
+        
+        // Store player type in config
+        $this->config['player_type'] = $playerType;
 
         file_put_contents($this->configPath, json_encode($this->config, JSON_PRETTY_PRINT));
 
@@ -83,8 +100,33 @@ class SetupScreenCommand extends BaseCommand
         $output->writeln('Clinic : ' . $record['name']);
         $output->writeln('Device ID: ' . $deviceId);
         $output->writeln('Installation ID : ' . $record['installation_id']);
+        $output->writeln('Player Type: ' . ($playerType === 'live-tv2' ? 'Live TV2 (HTML5)' : 'OMX Player'));
         
         $this->envSetup();
+        
+        // If Live TV2 is selected, install dependencies and extract URL
+        if ($playerType === 'live-tv2' && strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+            $output->writeln('');
+            $output->writeln('===========================================');
+            $output->writeln('Setting up Live TV2 dependencies...');
+            $output->writeln('===========================================');
+            
+            if (!$this->setupLiveTV2Dependencies($output)) {
+                $output->writeln('<error>Warning: Failed to complete Live TV2 setup. Please run manually:</error>');
+                $output->writeln('  pip3 install yt-dlp');
+                $output->writeln('  sh ' . $this->basePath . '/bin/extract-tv2-url.sh');
+                return 1;
+            }
+            
+            $output->writeln('');
+            $output->writeln('✅ Live TV2 setup complete!');
+            $output->writeln('');
+            $output->writeln('The system will now restart to show the TV2 stream.');
+            $output->writeln('Rebooting in 5 seconds...');
+            
+            sleep(5);
+            shell_exec('sudo reboot');
+        }
 
         return 1;
     }
@@ -183,5 +225,75 @@ class SetupScreenCommand extends BaseCommand
 
         return $screen;
 
+    }
+    
+    protected function setupLiveTV2Dependencies(OutputInterface $output)
+    {
+        // Step 1: Check if yt-dlp is installed
+        $output->writeln('');
+        $output->writeln('Step 1: Checking for yt-dlp...');
+        
+        $ytdlpCheck = shell_exec('command -v yt-dlp 2>/dev/null');
+        
+        if (empty($ytdlpCheck)) {
+            $output->writeln('  yt-dlp not found. Installing...');
+            
+            // Try pip3 first
+            $output->writeln('  Running: pip3 install yt-dlp');
+            $result = shell_exec('pip3 install yt-dlp 2>&1');
+            
+            // Verify installation
+            $ytdlpCheck = shell_exec('command -v yt-dlp 2>/dev/null');
+            
+            if (empty($ytdlpCheck)) {
+                // Try with sudo if first attempt failed
+                $output->writeln('  Trying with sudo...');
+                shell_exec('sudo pip3 install yt-dlp 2>&1');
+                
+                $ytdlpCheck = shell_exec('command -v yt-dlp 2>/dev/null');
+                
+                if (empty($ytdlpCheck)) {
+                    $output->writeln('  <error>❌ Failed to install yt-dlp</error>');
+                    return false;
+                }
+            }
+            
+            $output->writeln('  ✅ yt-dlp installed successfully');
+        } else {
+            $output->writeln('  ✅ yt-dlp already installed');
+        }
+        
+        // Step 2: Extract TV2 stream URL
+        $output->writeln('');
+        $output->writeln('Step 2: Extracting RTM TV2 stream URL...');
+        $output->writeln('  This may take a moment...');
+        
+        $extractScript = $this->basePath . '/bin/extract-tv2-url.sh';
+        
+        if (!file_exists($extractScript)) {
+            $output->writeln('  <error>❌ Extraction script not found: ' . $extractScript . '</error>');
+            return false;
+        }
+        
+        // Make script executable
+        shell_exec('chmod +x ' . $extractScript);
+        
+        // Run extraction
+        $result = shell_exec('sh ' . $extractScript . ' 2>&1');
+        
+        // Check if URL was successfully extracted
+        $cacheFile = $this->basePath . '/www/dev/tv2-stream-url.txt';
+        
+        if (!file_exists($cacheFile) || filesize($cacheFile) < 10) {
+            $output->writeln('  <error>❌ Failed to extract stream URL</error>');
+            $output->writeln('  Output: ' . $result);
+            return false;
+        }
+        
+        $streamUrl = trim(file_get_contents($cacheFile));
+        $output->writeln('  ✅ Stream URL extracted successfully');
+        $output->writeln('  URL: ' . substr($streamUrl, 0, 60) . '...');
+        
+        return true;
     }
 }

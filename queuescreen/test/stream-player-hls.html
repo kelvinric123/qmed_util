@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTM TV2 - HLS Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        #video-container {
+            width: 90%;
+            max-width: 1200px;
+            background: #000;
+        }
+        video {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+        }
+        #setup-screen {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            max-width: 600px;
+        }
+        #setup-screen h2 {
+            margin-bottom: 20px;
+        }
+        #setup-screen p {
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 14px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            background: #1a1a1a;
+            color: white;
+        }
+        button {
+            padding: 15px 40px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        #controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            color: white;
+            font-size: 12px;
+            display: none;
+        }
+        #controls.visible {
+            display: block;
+        }
+        .error {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info {
+            background: #17a2b8;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        code {
+            background: #2d3748;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div id="setup-screen">
+        <h2>🎬 RTM Stream HLS Player</h2>
+        <p>To use this player, you need the direct HLS stream URL (.m3u8)</p>
+        
+        <div class="info">
+            <strong>📝 How to get the stream URL:</strong><br><br>
+            On Raspberry Pi or Linux:<br>
+            <code>yt-dlp -g "https://rtmklik.rtm.gov.my/live/tv2"</code>
+        </div>
+
+        <input type="text" 
+               id="stream-url" 
+               placeholder="Paste the .m3u8 stream URL here"
+               value="">
+        
+        <button onclick="loadStream()">▶️ Play Stream</button>
+        
+        <div id="error-message" class="error" style="display: none;"></div>
+    </div>
+
+    <div id="video-container" style="display: none;">
+        <video id="video" controls autoplay></video>
+    </div>
+
+    <div id="controls">
+        <div id="status">Status: Connecting...</div>
+        <button onclick="reload()" style="margin-top: 10px; padding: 8px 15px; font-size: 12px;">
+            🔄 Reload
+        </button>
+    </div>
+
+    <!-- HLS.js library for playing m3u8 streams -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <script>
+        const setupScreen = document.getElementById('setup-screen');
+        const videoContainer = document.getElementById('video-container');
+        const video = document.getElementById('video');
+        const controls = document.getElementById('controls');
+        const statusDiv = document.getElementById('status');
+        const errorDiv = document.getElementById('error-message');
+        const streamUrlInput = document.getElementById('stream-url');
+
+        let hls = null;
+        let currentStreamUrl = '';
+
+        // Check if URL is in localStorage
+        const savedUrl = localStorage.getItem('rtm-stream-url');
+        if (savedUrl) {
+            streamUrlInput.value = savedUrl;
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            errorDiv.style.display = 'none';
+        }
+
+        function updateStatus(message) {
+            statusDiv.textContent = 'Status: ' + message;
+        }
+
+        function loadStream() {
+            const streamUrl = streamUrlInput.value.trim();
+            
+            if (!streamUrl) {
+                showError('Please enter a stream URL');
+                return;
+            }
+
+            if (!streamUrl.includes('.m3u8') && !streamUrl.includes('playlist')) {
+                showError('Invalid stream URL. Must be an m3u8 or playlist URL');
+                return;
+            }
+
+            hideError();
+            currentStreamUrl = streamUrl;
+            
+            // Save to localStorage
+            localStorage.setItem('rtm-stream-url', streamUrl);
+
+            // Hide setup screen
+            setupScreen.style.display = 'none';
+            videoContainer.style.display = 'block';
+            controls.classList.add('visible');
+
+            updateStatus('Loading stream...');
+
+            if (Hls.isSupported()) {
+                // Use HLS.js for browsers that don't support HLS natively
+                hls = new Hls({
+                    debug: false,
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 90
+                });
+
+                hls.loadSource(streamUrl);
+                hls.attachMedia(video);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    updateStatus('Stream loaded, starting playback...');
+                    video.play().catch(e => {
+                        console.error('Playback error:', e);
+                        showError('Could not start playback: ' + e.message);
+                    });
+                });
+
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    console.error('HLS Error:', data);
+                    
+                    if (data.fatal) {
+                        updateStatus('Fatal error: ' + data.type);
+                        
+                        switch(data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                showError('Network error. Trying to recover...');
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                showError('Media error. Trying to recover...');
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                showError('Fatal error. Cannot recover.');
+                                break;
+                        }
+                    }
+                });
+
+                hls.on(Hls.Events.FRAG_LOADED, function() {
+                    updateStatus('Playing ▶️');
+                });
+
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Native HLS support (Safari)
+                video.src = streamUrl;
+                video.addEventListener('loadedmetadata', function() {
+                    updateStatus('Stream loaded');
+                    video.play();
+                });
+            } else {
+                showError('Your browser does not support HLS playback');
+            }
+        }
+
+        function reload() {
+            updateStatus('Reloading...');
+            
+            if (hls) {
+                hls.destroy();
+            }
+            
+            loadStream();
+        }
+
+        // Auto-hide controls after 3 seconds of inactivity
+        let controlsTimeout;
+        document.addEventListener('mousemove', function() {
+            controls.classList.add('visible');
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => {
+                controls.classList.remove('visible');
+            }, 3000);
+        });
+
+        // Allow Enter key to submit
+        streamUrlInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadStream();
+            }
+        });
+
+        console.log('RTM HLS Player initialized');
+        console.log('HLS.js supported:', Hls.isSupported());
+        console.log('Native HLS supported:', video.canPlayType('application/vnd.apple.mpegurl'));
+    </script>
+</body>
+</html>
+

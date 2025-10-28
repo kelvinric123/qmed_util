@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live TV2 Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #000;
+            overflow: hidden;
+        }
+        #video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+        #video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        #status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+        #status.show {
+            display: block;
+        }
+        #status.error {
+            background: rgba(255, 0, 0, 0.8);
+        }
+        #status.success {
+            background: rgba(0, 200, 0, 0.8);
+        }
+        #status.info {
+            background: rgba(0, 100, 200, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <video id="video-player" autoplay muted></video>
+    </div>
+    <div id="status">Loading...</div>
+
+    <!-- HLS.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <script>
+        const video = document.getElementById('video-player');
+        const statusDiv = document.getElementById('status');
+        let hls = null;
+        let retryCount = 0;
+        const MAX_RETRIES = 5;
+        const RETRY_DELAY = 5000; // 5 seconds
+        const REFRESH_INTERVAL = 3600000; // 1 hour - refresh URL
+
+        function showStatus(message, type, duration = 3000) {
+            console.log(`[${type}] ${message}`);
+            statusDiv.textContent = message;
+            statusDiv.className = 'show ' + type;
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    statusDiv.className = '';
+                }, duration);
+            }
+        }
+
+        function hideStatus() {
+            statusDiv.className = '';
+        }
+
+        async function fetchStreamUrl() {
+            try {
+                const response = await fetch('live-tv2-player.php');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.url) {
+                    return data.url;
+                } else {
+                    throw new Error(data.message || 'No stream URL available');
+                }
+            } catch (error) {
+                console.error('Error fetching stream URL:', error);
+                throw error;
+            }
+        }
+
+        async function loadStream() {
+            try {
+                showStatus('Loading stream...', 'info', 0);
+                
+                const streamUrl = await fetchStreamUrl();
+                
+                if (!streamUrl) {
+                    throw new Error('Stream URL is empty');
+                }
+                
+                console.log('Stream URL:', streamUrl);
+
+                // Destroy existing player if any
+                if (hls) {
+                    hls.destroy();
+                    hls = null;
+                }
+
+                if (Hls.isSupported()) {
+                    // Use HLS.js
+                    hls = new Hls({
+                        debug: false,
+                        enableWorker: true,
+                        lowLatencyMode: true,
+                        maxBufferLength: 30,
+                        maxMaxBufferLength: 60,
+                        maxBufferSize: 60 * 1000 * 1000,
+                        maxBufferHole: 0.5
+                    });
+
+                    hls.loadSource(streamUrl);
+                    hls.attachMedia(video);
+
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        showStatus('Stream loaded successfully', 'success', 3000);
+                        video.play().then(() => {
+                            // Unmute after starting (for autoplay policy)
+                            setTimeout(() => {
+                                video.muted = false;
+                            }, 1000);
+                            retryCount = 0; // Reset retry count on success
+                        }).catch(e => {
+                            showStatus('Playback error: ' + e.message, 'error', 5000);
+                        });
+                    });
+
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        console.error('HLS Error:', data);
+                        
+                        if (data.fatal) {
+                            switch(data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    showStatus('Network error - attempting recovery', 'error', 0);
+                                    hls.startLoad();
+                                    setTimeout(retryLoad, RETRY_DELAY);
+                                    break;
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    showStatus('Media error - attempting recovery', 'error', 0);
+                                    hls.recoverMediaError();
+                                    break;
+                                default:
+                                    showStatus('Fatal error - reloading stream', 'error', 0);
+                                    setTimeout(retryLoad, RETRY_DELAY);
+                                    break;
+                            }
+                        }
+                    });
+
+                    hls.on(Hls.Events.FRAG_LOADED, function() {
+                        // Stream is playing
+                        setTimeout(hideStatus, 2000);
+                    });
+
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Native HLS support (Safari)
+                    video.src = streamUrl;
+                    video.addEventListener('loadedmetadata', function() {
+                        showStatus('Stream loaded (native)', 'success', 3000);
+                        video.play().then(() => {
+                            setTimeout(() => {
+                                video.muted = false;
+                            }, 1000);
+                            retryCount = 0;
+                        });
+                    });
+                    
+                    video.addEventListener('error', function() {
+                        showStatus('Video error - retrying', 'error', 0);
+                        setTimeout(retryLoad, RETRY_DELAY);
+                    });
+                } else {
+                    showStatus('Browser does not support HLS playback', 'error', 0);
+                }
+
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error', 0);
+                setTimeout(retryLoad, RETRY_DELAY);
+            }
+        }
+
+        function retryLoad() {
+            if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                showStatus(`Retrying (${retryCount}/${MAX_RETRIES})...`, 'info', 0);
+                setTimeout(loadStream, 1000);
+            } else {
+                showStatus('Max retries reached. Please check the stream.', 'error', 0);
+                // Reset retry count after 5 minutes
+                setTimeout(() => {
+                    retryCount = 0;
+                    loadStream();
+                }, 300000);
+            }
+        }
+
+        // Periodic URL refresh (in case the stream URL changes)
+        setInterval(() => {
+            console.log('Refreshing stream URL...');
+            loadStream();
+        }, REFRESH_INTERVAL);
+
+        // Monitor video stalling
+        let lastTime = 0;
+        let stallCount = 0;
+        setInterval(() => {
+            if (video.currentTime === lastTime && !video.paused && !video.ended) {
+                stallCount++;
+                if (stallCount > 5) { // Stalled for 5 seconds
+                    console.log('Video stalled, reloading...');
+                    showStatus('Stream stalled - reloading', 'error', 0);
+                    loadStream();
+                    stallCount = 0;
+                }
+            } else {
+                stallCount = 0;
+            }
+            lastTime = video.currentTime;
+        }, 1000);
+
+        // Handle visibility change (reload if tab becomes visible)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && video.paused) {
+                video.play().catch(() => loadStream());
+            }
+        });
+
+        // Start loading the stream on page load
+        console.log('Live TV2 Player initialized');
+        console.log('HLS.js supported:', Hls.isSupported());
+        console.log('Native HLS supported:', video.canPlayType('application/vnd.apple.mpegurl'));
+        
+        // Start the stream
+        setTimeout(loadStream, 500);
+    </script>
+</body>
+</html>
+

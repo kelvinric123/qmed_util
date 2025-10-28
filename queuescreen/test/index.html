@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTM Stream Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .stream-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .option-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .option-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+        .option-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .option-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        .btn-secondary {
+            background: #48bb78;
+        }
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+        .info-box {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 4px;
+        }
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .info-box pre {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .status {
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: none;
+        }
+        .status.success {
+            background: #c6f6d5;
+            border: 1px solid #48bb78;
+            color: #22543d;
+        }
+        .status.error {
+            background: #fed7d7;
+            border: 1px solid #f56565;
+            color: #742a2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 RTM TV2 Stream Test</h1>
+        <p class="subtitle">Test different methods to play RTM TV2 without ads</p>
+
+        <div class="stream-options">
+            <div class="option-card" onclick="window.open('stream-player-workaround.html', '_blank')">
+                <h3>🖥️ Workaround Methods</h3>
+                <p>View solutions for X-Frame-Options blocking (iframe won't work)</p>
+                <button class="btn">View Solutions</button>
+            </div>
+            
+            <div class="option-card" onclick="window.open('stream-player-hls.html', '_blank')">
+                <h3>🎬 HLS Player</h3>
+                <p>Play direct stream URL with HTML5 video player (no ads!)</p>
+                <button class="btn">Open HLS Player</button>
+            </div>
+
+            <div class="option-card" onclick="window.open('https://rtmklik.rtm.gov.my/live/tv2', '_blank')">
+                <h3>🔗 Direct RTM Page</h3>
+                <p>Opens the original RTM Klik page (may have ads)</p>
+                <button class="btn btn-secondary">Open RTM Site</button>
+            </div>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div class="alert-warning" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; color: #856404;">
+            <strong>⚠️ Important:</strong> RTM Klik blocks iframe embedding with <code>X-Frame-Options: sameorigin</code>.
+            <br>You cannot embed their site directly. Use one of the workarounds above.
+        </div>
+
+        <div class="info-box">
+            <h3>📋 For Raspberry Pi Deployment</h3>
+            <p><strong>Method 1: Extract direct stream URL (Recommended - No Ads!)</strong></p>
+            <pre>
+# On Raspberry Pi, install yt-dlp
+pip3 install yt-dlp
+
+# Extract the direct stream URL
+yt-dlp -g "https://rtmklik.rtm.gov.my/live/tv2"
+
+# This will output an m3u8 URL like:
+# https://rtm-live.glueapi.io/smil:rtm2/playlist.m3u8
+
+# Play with omxplayer (no ads, lightweight)
+omxplayer --live "URL_HERE"
+
+# Or with VLC (more robust)
+cvlc "URL_HERE" --fullscreen --loop
+            </pre>
+
+            <p style="margin-top: 20px;"><strong>Method 2: Use Chromium with ad-blocking</strong></p>
+            <pre>
+# Launch fullscreen browser
+chromium-browser --kiosk \
+  --autoplay-policy=no-user-gesture-required \
+  "https://rtmklik.rtm.gov.my/live/tv2"
+            </pre>
+
+            <p style="margin-top: 20px;"><strong>Integration with queuescreen:</strong></p>
+            <pre>
+# Run the test stream player
+php test/play-stream.php 0 0 1920 1080
+
+# Or integrate into your cron jobs (bin/cron.php)
+# to show TV during specific hours
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+
+        async function testStreamExtraction() {
+            showStatus('🔄 Attempting to extract stream URL... This may take a moment.', 'success');
+            
+            // Note: This won't work directly from browser due to CORS
+            // This is just for demonstration
+            try {
+                const response = await fetch('https://rtmklik.rtm.gov.my/live/tv2');
+                const html = await response.text();
+                
+                // Try to find m3u8 or video source in the HTML
+                const m3u8Match = html.match(/https?:\/\/[^\s"']+\.m3u8[^\s"']*/);
+                const mp4Match = html.match(/https?:\/\/[^\s"']+\.mp4[^\s"']*/);
+                
+                if (m3u8Match || mp4Match) {
+                    const url = m3u8Match ? m3u8Match[0] : mp4Match[0];
+                    showStatus('✅ Found potential stream URL: ' + url, 'success');
+                    console.log('Stream URL:', url);
+                } else {
+                    showStatus('⚠️ Could not extract stream URL from HTML. Check console for network requests.', 'error');
+                    console.log('Open browser DevTools > Network tab and filter for .m3u8 or video requests');
+                }
+            } catch (error) {
+                showStatus('⚠️ CORS error (expected). Use yt-dlp on Raspberry Pi instead. See instructions below.', 'error');
+                console.log('Use this command on Raspberry Pi:\nyt-dlp -g "https://rtmklik.rtm.gov.my/live/tv2"');
+            }
+        }
+
+        // Auto-detect if running on localhost
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('✅ Running on localhost - all test files should work');
+            console.log('📁 Test files location:', window.location.href);
+        }
+    </script>
+</body>
+</html>
+

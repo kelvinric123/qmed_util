@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTM Stream - Workarounds</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #856404;
+        }
+        .solution {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .solution h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .solution.recommended {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        .solution.recommended h3 {
+            color: #48bb78;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #48bb78;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge-warning {
+            background: #fbbf24;
+        }
+        pre {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 13px;
+            margin: 10px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .pros, .cons {
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .pros {
+            background: #d4edda;
+            border-left: 3px solid #28a745;
+        }
+        .cons {
+            background: #f8d7da;
+            border-left: 3px solid #dc3545;
+        }
+        .pros h4, .cons h4 {
+            margin-bottom: 8px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Workarounds for X-Frame-Options</h1>
+        
+        <div class="alert-warning">
+            <strong>⚠️ Problem:</strong> RTM Klik website blocks iframe embedding with <code>X-Frame-Options: sameorigin</code> header.
+            <br>This is a security feature that prevents their site from being displayed in frames.
+        </div>
+
+        <!-- Solution 1: Best -->
+        <div class="solution recommended">
+            <h3>✅ Solution 1: Extract Direct Stream URL <span class="badge">RECOMMENDED</span></h3>
+            <p>Get the direct HLS/m3u8 stream URL and play it without the website wrapper.</p>
+            
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>✅ Pros:</h4>
+                    <ul>
+                        <li>No ads</li>
+                        <li>No X-Frame-Options issues</li>
+                        <li>Lightweight playback</li>
+                        <li>Full control</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>❌ Cons:</h4>
+                    <ul>
+                        <li>Requires yt-dlp</li>
+                        <li>URL may change</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p><strong>For Raspberry Pi:</strong></p>
+            <pre># Install yt-dlp
+pip3 install yt-dlp
+
+# Extract stream URL
+STREAM_URL=$(yt-dlp -g "https://rtmklik.rtm.gov.my/live/tv2")
+
+# Play with omxplayer (recommended)
+omxplayer --live "$STREAM_URL"
+
+# Or with VLC
+cvlc "$STREAM_URL" --fullscreen</pre>
+
+            <p><strong>For Windows (Testing):</strong></p>
+            <pre># Install yt-dlp
+pip install yt-dlp
+
+# Get URL
+yt-dlp -g "https://rtmklik.rtm.gov.my/live/tv2"
+
+# Play with VLC
+vlc "PASTE_URL_HERE"</pre>
+        </div>
+
+        <!-- Solution 2: Direct Window -->
+        <div class="solution">
+            <h3>🌐 Solution 2: Open in Direct Window</h3>
+            <p>Open RTM site directly in Chromium (not in iframe).</p>
+            
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>✅ Pros:</h4>
+                    <ul>
+                        <li>Simple to implement</li>
+                        <li>No URL extraction needed</li>
+                        <li>Official player</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>❌ Cons:</h4>
+                    <ul>
+                        <li>May show ads</li>
+                        <li>Full webpage overhead</li>
+                        <li>Harder to control</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p><strong>For Raspberry Pi:</strong></p>
+            <pre>chromium-browser --kiosk \
+  --autoplay-policy=no-user-gesture-required \
+  --disable-infobars \
+  "https://rtmklik.rtm.gov.my/live/tv2"</pre>
+
+            <button class="btn" onclick="window.open('https://rtmklik.rtm.gov.my/live/tv2')">
+                Test This Method
+            </button>
+        </div>
+
+        <!-- Solution 3: Proxy (Advanced) -->
+        <div class="solution">
+            <h3>🔄 Solution 3: Use CORS Proxy <span class="badge badge-warning">ADVANCED</span></h3>
+            <p>Run a local proxy that strips X-Frame-Options header.</p>
+            
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>✅ Pros:</h4>
+                    <ul>
+                        <li>Can embed in iframe</li>
+                        <li>Works with any site</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>❌ Cons:</h4>
+                    <ul>
+                        <li>Complex setup</li>
+                        <li>Requires proxy server</li>
+                        <li>May violate ToS</li>
+                        <li>Legal concerns</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p><strong>Example (for development only):</strong></p>
+            <pre># Using CORS Anywhere
+git clone https://github.com/Rob--W/cors-anywhere.git
+cd cors-anywhere
+npm install
+node server.js
+
+# Then access via: http://localhost:8080/https://rtmklik.rtm.gov.my/live/tv2</pre>
+
+            <p style="color: #dc3545; font-weight: bold;">⚠️ Not recommended for production use!</p>
+        </div>
+
+        <!-- Solution 4: Video Element -->
+        <div class="solution">
+            <h3>🎬 Solution 4: HTML5 Video Element</h3>
+            <p>If you have the direct stream URL, use HTML5 video player.</p>
+            
+            <pre>&lt;video id="stream" controls autoplay&gt;
+  &lt;source src="STREAM_URL.m3u8" type="application/x-mpegURL"&gt;
+&lt;/video&gt;
+
+&lt;script src="https://cdn.jsdelivr.net/npm/hls.js@latest"&gt;&lt;/script&gt;
+&lt;script&gt;
+  if (Hls.isSupported()) {
+    var video = document.getElementById('stream');
+    var hls = new Hls();
+    hls.loadSource('STREAM_URL.m3u8');
+    hls.attachMedia(video);
+  }
+&lt;/script&gt;</pre>
+
+            <button class="btn" onclick="window.location.href='stream-player-hls.html'">
+                Try HLS Player
+            </button>
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: #f0f4f8; border-radius: 8px;">
+            <h3>📝 Recommendation for Queuescreen:</h3>
+            <p style="margin: 10px 0;">Use <strong>Solution 1 (Direct Stream URL)</strong> for production deployment:</p>
+            <ol style="line-height: 2;">
+                <li>Extract stream URL with yt-dlp on your Raspberry Pi</li>
+                <li>Update <code>play-stream.sh</code> with the direct URL</li>
+                <li>Use omxplayer for lightweight, ad-free playback</li>
+                <li>Set up a cron job to refresh the URL daily (in case it changes)</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>
+

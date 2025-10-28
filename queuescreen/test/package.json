@@ -1,0 +1,20 @@
+{
+  "name": "rtm-stream-extractor",
+  "version": "1.0.0",
+  "description": "Extract direct stream URL from RTM Klik",
+  "main": "extract-stream-url.js",
+  "scripts": {
+    "extract": "node extract-stream-url.js"
+  },
+  "keywords": [
+    "rtm",
+    "stream",
+    "video"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}
+
