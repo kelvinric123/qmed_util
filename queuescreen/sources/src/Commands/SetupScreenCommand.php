@@ -266,27 +266,35 @@ class SetupScreenCommand extends BaseCommand
         // Step 2: Extract TV2 stream URL
         $output->writeln('');
         $output->writeln('Step 2: Extracting RTM TV2 stream URL...');
-        $output->writeln('  This may take a moment...');
+        $output->writeln('  This may take a moment... Trying multiple methods...');
         
+        // Try the automatic extractor which tries multiple methods
+        $autoExtractScript = $this->basePath . '/extract-url-auto.sh';
         $extractScript = $this->basePath . '/bin/extract-tv2-url.sh';
         
-        if (!file_exists($extractScript)) {
-            $output->writeln('  <error>❌ Extraction script not found: ' . $extractScript . '</error>');
+        // Prefer the auto extractor if available
+        if (file_exists($autoExtractScript)) {
+            shell_exec('chmod +x ' . $autoExtractScript);
+            $result = shell_exec('sh ' . $autoExtractScript . ' 2>&1');
+        } elseif (file_exists($extractScript)) {
+            shell_exec('chmod +x ' . $extractScript);
+            $result = shell_exec('sh ' . $extractScript . ' 2>&1');
+        } else {
+            $output->writeln('  <error>❌ Extraction scripts not found</error>');
             return false;
         }
-        
-        // Make script executable
-        shell_exec('chmod +x ' . $extractScript);
-        
-        // Run extraction
-        $result = shell_exec('sh ' . $extractScript . ' 2>&1');
         
         // Check if URL was successfully extracted
         $cacheFile = $this->basePath . '/www/dev/tv2-stream-url.txt';
         
         if (!file_exists($cacheFile) || filesize($cacheFile) < 10) {
             $output->writeln('  <error>❌ Failed to extract stream URL</error>');
-            $output->writeln('  Output: ' . $result);
+            $output->writeln('');
+            $output->writeln('  You can try manual extraction:');
+            $output->writeln('  1. Open: https://rtmklik.rtm.gov.my/live/tv2');
+            $output->writeln('  2. Press F12 -> Network tab -> Filter "m3u8"');
+            $output->writeln('  3. Play video and copy the .m3u8 URL');
+            $output->writeln('  4. Save to: ' . $cacheFile);
             return false;
         }
         

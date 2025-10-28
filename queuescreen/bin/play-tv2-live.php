@@ -59,12 +59,29 @@ while (true) {
     // Check if URL needs refresh every 4 hours
     $fileTime = filemtime($urlCachePath);
     if (time() - $fileTime > 14400) { // 4 hours
-        // Try to refresh URL
+        // Try to refresh URL using smart extractor
         if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
-            $newUrl = trim(shell_exec('yt-dlp -g "https://rtmklik.rtm.gov.my/live/tv2" 2>/dev/null | head -n 1'));
-            if (!empty($newUrl)) {
-                file_put_contents($urlCachePath, $newUrl);
-                $logger->log('tv2_url_refreshed', ['url' => $newUrl]);
+            $logger->log('tv2_url_refresh_attempt');
+            
+            // Try automatic extractor first
+            $autoExtractScript = __DIR__ . '/../extract-url-auto.sh';
+            if (file_exists($autoExtractScript)) {
+                shell_exec('chmod +x ' . $autoExtractScript);
+                shell_exec('sh ' . $autoExtractScript . ' > /dev/null 2>&1');
+            } else {
+                // Fallback to yt-dlp
+                $newUrl = trim(shell_exec('yt-dlp -g "https://rtmklik.rtm.gov.my/live/tv2" 2>/dev/null | head -n 1'));
+                if (!empty($newUrl)) {
+                    file_put_contents($urlCachePath, $newUrl);
+                }
+            }
+            
+            // Check if refresh was successful
+            if (file_exists($urlCachePath)) {
+                $newUrl = trim(file_get_contents($urlCachePath));
+                if (!empty($newUrl)) {
+                    $logger->log('tv2_url_refreshed', ['url' => substr($newUrl, 0, 60) . '...']);
+                }
             }
         }
     }
