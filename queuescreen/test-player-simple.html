@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live TV2 Player - Simple Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        #video {
+            width: 100%;
+            max-width: 800px;
+            background: #000;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            font-size: 14px;
+            border: 2px solid #4CAF50;
+            background: #222;
+            color: #fff;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .info { color: #2196F3; }
+        .instructions {
+            background: #1a1a1a;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .instructions h3 {
+            margin-top: 0;
+        }
+        code {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📺 Live TV2 Player - Simple Test</h1>
+        
+        <div class="instructions">
+            <h3>Quick Test Instructions:</h3>
+            <p><strong>Option 1: Use Pre-extracted URL</strong></p>
+            <ol>
+                <li>Run on Raspberry Pi: <code>php test-player-standalone.php</code></li>
+                <li>It will extract and save the URL automatically</li>
+                <li>Click "Load from API" button below</li>
+            </ol>
+            
+            <p><strong>Option 2: Manual URL</strong></p>
+            <ol>
+                <li>Get URL manually: <code>yt-dlp -g "https://rtmklik.rtm.gov.my/live/tv2"</code></li>
+                <li>Paste the URL below and click "Play Stream"</li>
+            </ol>
+            
+            <p><strong>Option 3: Use Sample URL</strong></p>
+            <ol>
+                <li>Click "Use Sample URL" to test with a known working URL</li>
+            </ol>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="streamUrl" placeholder="Paste HLS stream URL here (e.g., https://.../*.m3u8)" />
+            <button onclick="playStream()">▶️ Play Stream</button>
+            <button onclick="loadFromAPI()">📡 Load from API</button>
+            <button onclick="useSampleURL()">🔗 Use Sample URL</button>
+        </div>
+
+        <div id="status" class="status">
+            <span class="info">ℹ️ Ready to test player. Choose an option above.</span>
+        </div>
+
+        <video id="video" controls autoplay></video>
+
+        <div class="instructions" style="margin-top: 20px;">
+            <h3>Troubleshooting:</h3>
+            <ul>
+                <li><strong>No video playing?</strong> Check if the URL is valid (should be .m3u8)</li>
+                <li><strong>"Load from API" fails?</strong> Run <code>php test-player-standalone.php</code> first</li>
+                <li><strong>Stream stops?</strong> URL may have expired. Extract a new one.</li>
+                <li><strong>Black screen?</strong> Wait 5-10 seconds, stream may be buffering</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const statusDiv = document.getElementById('status');
+        const urlInput = document.getElementById('streamUrl');
+
+        function updateStatus(message, type = 'info') {
+            const icons = {
+                'info': 'ℹ️',
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️'
+            };
+            statusDiv.innerHTML = `<span class="${type}">${icons[type]} ${message}</span>`;
+        }
+
+        function useSampleURL() {
+            // Use a sample URL for testing
+            const sampleUrl = 'https://d25tgymtnqzu8s.cloudfront.net/smil:tv2/chunklist_b2596000_slENG.m3u8?id=2';
+            urlInput.value = sampleUrl;
+            updateStatus('Sample URL loaded. Click "Play Stream" to test.', 'success');
+        }
+
+        function loadFromAPI() {
+            updateStatus('Loading stream URL from API...', 'info');
+            
+            fetch('www/dev/live-tv2-player.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.stream_url) {
+                        urlInput.value = data.stream_url;
+                        updateStatus('URL loaded from API! Click "Play Stream" to start.', 'success');
+                    } else {
+                        updateStatus('Failed to load URL from API. Run: php test-player-standalone.php', 'error');
+                    }
+                })
+                .catch(error => {
+                    updateStatus('API not available. Run: php test-player-standalone.php first', 'error');
+                    console.error('Error:', error);
+                });
+        }
+
+        function playStream() {
+            const streamUrl = urlInput.value.trim();
+            
+            if (!streamUrl) {
+                updateStatus('Please enter a stream URL or click "Load from API"', 'warning');
+                return;
+            }
+
+            if (!streamUrl.includes('.m3u8')) {
+                updateStatus('URL should be an HLS stream (.m3u8). Please check the URL.', 'warning');
+                return;
+            }
+
+            updateStatus('Starting stream...', 'info');
+
+            if (Hls.isSupported()) {
+                const hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: false,
+                    backBufferLength: 90
+                });
+
+                hls.loadSource(streamUrl);
+                hls.attachMedia(video);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    updateStatus('✅ Stream loaded! Playing...', 'success');
+                    video.play().catch(e => {
+                        updateStatus('Click on video to start playback', 'warning');
+                    });
+                });
+
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        updateStatus('Stream error: ' + data.type + '. URL may have expired.', 'error');
+                        console.error('HLS Error:', data);
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = streamUrl;
+                video.addEventListener('loadedmetadata', function() {
+                    updateStatus('✅ Stream loaded! Playing...', 'success');
+                    video.play();
+                });
+                video.addEventListener('error', function() {
+                    updateStatus('Failed to load stream. Check URL or try extracting a new one.', 'error');
+                });
+            } else {
+                updateStatus('HLS not supported in this browser!', 'error');
+            }
+        }
+
+        // Auto-load on page load if API is available
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                loadFromAPI();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
