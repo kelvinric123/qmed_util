@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Screen with Live TV2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 920px 1fr;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+            gap: 0;
+        }
+        
+        /* Video Player Area - Top Left */
+        #video-section {
+            position: relative;
+            background: #000;
+            padding: 0;
+            overflow: hidden;
+        }
+        #video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #video-status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+        #video-status.show { display: block; }
+        #video-status.error { background: rgba(255, 0, 0, 0.8); }
+        #video-status.success { background: rgba(0, 200, 0, 0.8); }
+        #video-status.info { background: rgba(0, 100, 200, 0.8); }
+        
+        /* Queue Display Area - Right Side */
+        #queue-section {
+            grid-row: 1 / 3;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        /* Bottom Info Area - Bottom Left */
+        #info-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logo-image {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .logo-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00d2ff;
+        }
+        
+        .datetime {
+            text-align: right;
+        }
+        .time {
+            font-size: 48px;
+            font-weight: bold;
+            color: #8b3a3a;
+            line-height: 1;
+        }
+        .date {
+            font-size: 16px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Queue Items */
+        .queue-header {
+            background: #8b3a3a;
+            color: white;
+            padding: 20px 30px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .queue-list {
+            flex: 1;
+            padding: 20px;
+        }
+        .queue-item {
+            background: #f0f0f0;
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .queue-item.calling {
+            background: #8b3a3a;
+            color: white;
+        }
+        .queue-number {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .queue-counter {
+            font-size: 24px;
+            color: #666;
+        }
+        .queue-item.calling .queue-counter {
+            color: #fff;
+        }
+        .calling-badge {
+            background: #8b3a3a;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Video Section - Top Left -->
+        <div id="video-section">
+            <video id="video-player" autoplay muted></video>
+            <div id="video-status">Loading...</div>
+        </div>
+        
+        <!-- Queue Section - Right Side -->
+        <div id="queue-section">
+            <div class="queue-header">NOW SERVING</div>
+            <div class="queue-list">
+                <div class="queue-item calling">
+                    <span class="queue-number">---- </span>
+                    <span class="calling-badge">CALLING</span>
+                    <span class="queue-counter">-</span>
+                </div>
+                <div class="queue-item">
+                    <span class="queue-number">---- </span>
+                    <span class="queue-counter">-</span>
+                </div>
+                <div class="queue-item">
+                    <span class="queue-number">---- </span>
+                    <span class="queue-counter">-</span>
+                </div>
+                <div class="queue-item">
+                    <span class="queue-number">---- </span>
+                    <span class="queue-counter">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info Section - Bottom Left -->
+        <div id="info-section">
+            <div class="logo">
+                <div class="logo-image">Q</div>
+                <div class="logo-text">qmed.asia</div>
+            </div>
+            <div class="datetime">
+                <div class="time" id="current-time">12:55pm</div>
+                <div class="date" id="current-date">WEDNESDAY<br>29 OCT 25</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HLS.js library for video streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <script>
+        // Video Player Logic
+        const video = document.getElementById('video-player');
+        const videoStatus = document.getElementById('video-status');
+        let hls = null;
+
+        function showVideoStatus(message, type, duration = 3000) {
+            console.log(`[${type}] ${message}`);
+            videoStatus.textContent = message;
+            videoStatus.className = 'show ' + type;
+            if (duration > 0) {
+                setTimeout(() => videoStatus.className = '', duration);
+            }
+        }
+
+        async function fetchStreamUrl() {
+            try {
+                const response = await fetch('live-tv2-player.php');
+                const data = await response.json();
+                if (data.status === 'success' && data.url) {
+                    return data.url;
+                }
+                throw new Error(data.message || 'No stream URL available');
+            } catch (error) {
+                console.error('Error fetching stream URL:', error);
+                throw error;
+            }
+        }
+
+        async function loadStream() {
+            try {
+                showVideoStatus('Loading stream...', 'info', 0);
+                const streamUrl = await fetchStreamUrl();
+                
+                if (hls) {
+                    hls.destroy();
+                    hls = null;
+                }
+
+                if (Hls.isSupported()) {
+                    hls = new Hls({
+                        debug: false,
+                        enableWorker: true,
+                        lowLatencyMode: true
+                    });
+                    hls.loadSource(streamUrl);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        showVideoStatus('Stream loaded', 'success', 2000);
+                        video.play().then(() => {
+                            setTimeout(() => video.muted = false, 1000);
+                        });
+                    });
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        if (data.fatal) {
+                            showVideoStatus('Stream error - retrying...', 'error', 0);
+                            setTimeout(loadStream, 5000);
+                        }
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = streamUrl;
+                    video.play().then(() => {
+                        showVideoStatus('Stream loaded', 'success', 2000);
+                        setTimeout(() => video.muted = false, 1000);
+                    });
+                }
+            } catch (error) {
+                showVideoStatus('Error: ' + error.message, 'error', 0);
+                setTimeout(loadStream, 5000);
+            }
+        }
+
+        // Date/Time Update
+        function updateDateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            }).toLowerCase();
+            const dayStr = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+            const dateStr = now.toLocaleDateString('en-GB', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: '2-digit' 
+            }).toUpperCase();
+            
+            document.getElementById('current-time').textContent = timeStr;
+            document.getElementById('current-date').innerHTML = dayStr + '<br>' + dateStr;
+        }
+
+        // Initialize
+        setTimeout(loadStream, 500);
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // Refresh stream every hour
+        setInterval(loadStream, 3600000);
+    </script>
+</body>
+</html>
+
